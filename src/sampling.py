@@ -3,13 +3,8 @@
 import numpy as np
 from keras.datasets import mnist
 
-(X_train, label_train), (X_test, label_test) = mnist.load_data()
-
-num_users = 10
-ndat = 100
-
 # To do: add method of gan
-def make_anchors(X_train, nanc, anc_type='random'):
+def make_anchors(X_train, nanc, anc_type):
     '''
     Parameters
     --------------
@@ -24,8 +19,8 @@ def make_anchors(X_train, nanc, anc_type='random'):
     
     return Xanc
 
-def mnist_iid(X_train, num_users, ndat):
-    '''Sample I.I.D user data from MNIST dataset
+def sampling_iid(X_train, num_users, ndat):
+    '''Sample I.I.D user data from dataset
 
     Return
     --------
@@ -40,7 +35,7 @@ def mnist_iid(X_train, num_users, ndat):
     
     return list_users
 
-def mnist_noniid(X_train, label_train,  num_users, ndat, nlabel):
+def sampling_noniid(X_train, label_train,  num_users, ndat, nlabel):
     '''Sample non-I.I.D user data from MNIST dataset
     Parameters
     ----------
@@ -54,13 +49,12 @@ def mnist_noniid(X_train, label_train,  num_users, ndat, nlabel):
     num_shards, num_imgs = nlabel*num_users, int(ndat//nlabel)
     idx_shard = [i for i in range(num_shards)]
     
-    total_size = num_users * ndat
-    idxs = np.arange(total_size)
+    ntrain = num_users * ndat
 
     # sort labels
-    idxs_labels = np.vstack((idxs, label_train[:total_size]))
-    idxs_labels = idxs_labels[:, idxs_labels[1, :].argsort()]
-    idxs = idxs_labels[0, :]
+    idx_label_pair = [(i, label) for i, label in enumerate(label_train[:ntrain])]
+    idx_label_pair = sorted(idx_label_pair, key=lambda x:x[1])
+    idx_sorted = [pair[0] for pair in idx_label_pair]
 
     # divide and assign nlabel number of label per user
     # dict_users = {i: np.array([], dtype=int) for i in range(num_users)}
@@ -70,7 +64,7 @@ def mnist_noniid(X_train, label_train,  num_users, ndat, nlabel):
         rand_set = set(np.random.choice(idx_shard, nlabel, replace=False))
         idx_shard = list(set(idx_shard) - rand_set)
         for rand in rand_set:
-            user_idx = np.hstack((user_idx, idxs[rand*num_imgs:(rand+1)*num_imgs]))
+            user_idx = np.hstack((user_idx, idx_sorted[rand*num_imgs:(rand+1)*num_imgs]))
             user_idx = user_idx.astype(int).tolist() # convert dtype from float to int
         list_users.append(user_idx)
 
