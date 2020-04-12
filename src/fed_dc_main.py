@@ -62,21 +62,21 @@ if __name__ == '__main__':
         # whole training on all data
         print('----- Whole Training -----')
         centr_hist = centr_model.fit(
-            X_all, label_all, batch_size=args.batch_size, epochs=args.nround, validation_data=(X_test, label_test), verbose=0)
+            X_all, label_all, batch_size=args.batch_size, epochs=args.epoch, validation_data=(X_test, label_test), verbose=0)
         centr_score.append([centr_hist.history['loss'], centr_hist.history['val_loss'],
                             centr_hist.history['val_sparse_categorical_accuracy']])
 
         # local training on User 1
         print('------ Local Training -----')
         ind_hist = ind_model.fit(X_train[user_list[0]], label_train[user_list[0]],
-                                          batch_size=args.batch_size, epochs=args.nround, validation_data=(X_test, label_test), verbose=0)
+                                          batch_size=args.batch_size, epochs=args.epoch, validation_data=(X_test, label_test), verbose=0)
         ind_score.append([ind_hist.history['loss'], ind_hist.history['val_loss'],
                           ind_hist.history['val_sparse_categorical_accuracy']])
 
         # proposed method
         print('------ Data Collaboration -----')
         dc_hist = dc_model.fit(
-            X_dc, label_all, batch_size=args.batch_size, epochs=args.nround, validation_data=(X_test_dc, label_test))
+            X_dc, label_all, batch_size=args.batch_size, epochs=args.epoch, validation_data=(X_test_dc, label_test))
         dc_score.append([dc_hist.history['loss'], dc_hist.history['val_loss'],
                          dc_hist.history['val_sparse_categorical_accuracy']])
 
