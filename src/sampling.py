@@ -1,10 +1,10 @@
 # sorce: https://github.com/AshwinRJ/Federated-Learning-PyTorch/blob/master/src/sampling.py
 
 import numpy as np
-from keras.datasets import mnist
+from sklearn.preprocessing import normalize
 
 # To do: add method of gan
-def make_anchors(X_train, nanc, anc_type):
+def make_anchors(X_train, nanc, args):
     '''
     Parameters
     --------------
@@ -13,9 +13,10 @@ def make_anchors(X_train, nanc, anc_type):
     anc_type: 'random', 'gan'
     
     '''
-    if anc_type == 'random':
+    if args.anc_type == 'random':
         
         Xanc = np.random.uniform(low=np.min(X_train), high=np.max(X_train), size=(nanc, X_train.shape[1]))
+        Xanc = normalize(Xanc)
     
     return Xanc
 

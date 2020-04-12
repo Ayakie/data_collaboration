@@ -8,7 +8,7 @@ import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from packages.lpproj_LPP import LocalityPreservingProjection as LPP
 
-def get_ir(X, Xtest, Xanc, d_ir, method, n_neighbors):
+def get_ir(X, Xtest, Xanc, method, d_ir, args):
     
     if method == 'PCA':
         f = PCA(d_ir, svd_solver='full')
@@ -17,10 +17,10 @@ def get_ir(X, Xtest, Xanc, d_ir, method, n_neighbors):
         f = FastICA(d_ir)
         
     elif method == 'LPP':
-        f = LPP(n_components=d_ir, n_neighbors=n_neighbors)
+        f = LPP(n_components=d_ir, n_neighbors=args.n_neighbors)
     
     elif method == 'LLE':
-        f = LocallyLinearEmbedding(n_components=d_ir, n_neighbors=n_neighbors)
+        f = LocallyLinearEmbedding(n_components=d_ir, n_neighbors=args.n_neighbors)
 
     else:
         # Either "arpack" for the ARPACK wrapper in SciPy
@@ -82,7 +82,7 @@ def get_cr(Div_tilde, d_cr):
     return X_hat_list, Xtest_hat
 
 # To do: enable to select different method per user
-def data_collaboration(Div_data, method, args):
+def data_collaboration(Div_data, method, d_ir, args):
     '''compute whole process of DC
     
     Parameters
@@ -97,13 +97,13 @@ def data_collaboration(Div_data, method, args):
         dimention of left singular vector U
     
     '''
-    d_ir = args.d_ir
+    
     d_cr = d_ir
     n_neighbors = args.n_neighbors
 
     Div_tilde = []
     for i, user in enumerate(Div_data):
-        X_tilde, Xtest_tilde, Xanc_tilde = get_ir(user['X'], user['Xtest'], user['Xanc'], d_ir, method, n_neighbors)
+        X_tilde, Xtest_tilde, Xanc_tilde = get_ir(user['X'], user['Xtest'], user['Xanc'], method, d_ir, args)
         Div_tilde.append({'X_tilde': X_tilde, 'Xtest_tilde': Xtest_tilde, 'Xanc_tilde': Xanc_tilde})
     
     X_hat_list, Xtest_hat = get_cr(Div_tilde, d_cr)

@@ -39,13 +39,11 @@ def get_dataset(args, nlabel=2):
         user_list = sampling_iid(X_train, args.num_users, args.ndat)
     else:
         user_list = sampling_noniid(X_train, label_train, args.num_users, args.ndat, nlabel=nlabel)        
-
     
-    if args.anc_type == 'random':
-        Xanc = make_anchors(X_train, args.nanc, args.anc_type)
-        Xanc = normalize(Xanc)
+    X_test = X_test[:args.ntest]
+    label_test = label_test[:args.ntest]
 
-    return X_train, label_train, X_test, label_test, Xanc, user_list
+    return X_train, label_train, X_test, label_test, user_list
 
 
 def fed_avg(user_weight_list, user_ndat_list):
@@ -77,14 +75,67 @@ def exp_details(args):
     print(f'    Dimension of intermediate representation : {args.d_ir}\n')
     return
 
-def get_3col_plt(centr_hit, ind_hist, dc_hist, fl_hist):
+def exp_results(centr_score, ind_score, dc_score, fl_score, args):
+    print(f'Averaged over {args.repeat} runs')
+    print('=== Centralized Model ===')
+    print('Training loss: ', centr_score[0])
+    print('Test loss: ', centr_score[1])
+    print('Test accuracy: ', centr_score[2])
+
+    print('=== Individual Model ===')
+    print('Training loss: ', ind_score[0])
+    print('Test loss: ', ind_score[1])
+    print('Test accuracy: ', ind_score[2])
+
+    print('=== Data Collaboration ===')
+    print('Training loss: ', dc_score[0])
+    print('Test loss: ', dc_score[1])
+    print('Test accuracy: ', dc_score[2])
+
+    print('=== Federated Learning ===')
+    print('Training loss of FL: ', fl_score[0])
+    print('Test loss of FL: ', fl_score[1])
+    print('Test accuracy of FL: ', fl_score[2])
+    return
+
+def get_3col_plt(centr_score, ind_score, dc_score, fl_score, args):
     '''
     Prameters
     ---------
-    centr
+    score: list
+        score[0]: training loss
+        score[1]: test loss
+        score[2]: test accuracy
     '''
-    fig, ax = plt.subplots(1, 3, figsize=(18,5))
-    ax[0].plot(centr_hit, '.', label='centralized')
-    ax[0].plot(ind_hist, '-.', label='individual')
-    ax[0].plot(dc_hist, '-+', label='data collaboration')
-    ax[1].plot()
+    fig, ax = plt.subplots(1, 3, figsize=(18, 5))
+    ax[0].plot(centr_score[0], marker='.', label='centralized')
+    ax[0].plot(ind_score[0], linestyle='-.', marker='.', label='individual')
+    ax[0].plot(dc_score[0], marker='.', label='data collaboration')
+    ax[0].plot(fl_score[0], marker='.', label='federated learning')
+    ax[0].set_xlabel('Rounds for FL, Epochs for the other methods')
+    ax[0].legend()
+    ax[0].set_title('Training Loss, NN')
+
+    ax[1].plot(centr_score[1], marker='.', label='centralized')
+    ax[1].plot(ind_score[1], linestyle='-.', marker='.', label='individual')
+    ax[1].plot(dc_score[1], marker='.', label='data collaboration')
+    ax[1].plot(fl_score[1], marker='.', label='federated learning')
+    ax[1].set_xlabel('Rounds for FL, Epochs for the other methods')
+    ax[1].legend()
+    ax[1].set_title('Validation Loss, NN')
+
+    ax[2].plot(centr_score[2], marker='.', label='centralized')
+    ax[2].plot(ind_score[2], linestyle='-.', marker='.', label='individual')
+    ax[2].plot(dc_score[2], marker='.', label='data collaboration')
+    ax[2].plot(fl_score[2], marker='.', label='federated learning')
+    ax[2].set_xlabel('Rounds for FL, Epochs for the other methods')
+    ax[2].legend()
+    ax[2].set_title('Validation Accuracy, NN')
+
+    dir_path = "/Users/nedo_m02/Desktop/pytorch_practice/FL"
+    if args.save_fig:
+        plt.savefig(dir_path + '/save/figures/fed_dc_%s_%sanc_%sir_%susers_iid[%s]_%sround_%srun.png'
+                    % (args.dataset, args.nanc, args.d_ir, args.num_users, args.iid, args.nround, args.repeat))
+    else:
+        pass
+    plt.show()
