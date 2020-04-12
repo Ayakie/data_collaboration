@@ -12,23 +12,15 @@ from sklearn.ensemble import GradientBoostingClassifier
 # input_shape= X_train.shape[1:]
 # num_class=10
 
-def knn_cls(Xtrain, Xtest, ytrain, ytest): 
-    model = KNeighborsClassifier(n_neighbors=1)
-    model.fit(Xtrain, ytrain.ravel())
-    score = model.score(Xtest, ytest)
-    
-    return score
-
-
 class GlobalModel(object):
     optimizer_dict = {'sgd': SGD(), 'rmsprop': RMSprop(),
                   'adadelta': Adadelta(), 'adam': Adam()}
 
-    def __init__(self, args, input_shape, num_class):
-        self.input_shape = input_shape
-        self.num_class = num_class
-        self.optimizer = self.optimizer_dict[args.optimizer]
+    def __init__(self, args, X_train, num_class):
         self.args = args
+        self.input_shape = X_train.shape[1:]
+        self.num_class = num_class
+        self.optimizer = self.optimizer_dict[self.args.optimizer]
     
     def set_model(self):
         if self.args.model == 'cnn':
@@ -40,6 +32,8 @@ class GlobalModel(object):
                 model = self.cnn_cifar()
         elif self.args.model == 'mlp':
             model = self.mlp()
+        elif self.args.model == 'knn':
+            model = self.knn_cls()
         else:
             raise Exception('Passed args')
         
@@ -122,12 +116,12 @@ class GlobalModel(object):
         return model
 
     # Simple KNN Classifier
-    # def knn_cls(self, X_train, X_test, label_train, label_test, n_neighbors=self.args.n_neighbors): 
-    #     model = KNeighborsClassifier(n_neighbors=n_neighbors)
-    #     model.fit(X_train, label_train.ravel())
-    #     score = model.score(X_test, label_test.ravel())
+    def knn_cls(self):
+        model = KNeighborsClassifier(n_neighbors=self.args.n_neighbors)
+        # model.fit(X_train, label_train.ravel())
+        # score = model.score(X_test, label_test.ravel())
 
-    #     return score
+        return model
     
     # def gf_cls(self, X_train, X_test, label_train, label_test, lr = self.args.lr, max_depth=self.args.max_depth):
     #     # sklearn default: lr=0.1, max_depth=3
