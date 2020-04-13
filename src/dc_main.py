@@ -8,6 +8,7 @@ from models import GlobalModel
 from sampling import make_anchors
 from options import args_parser
 from dc_utils import data_collaboration
+import datetime
 
 # graph
 import matplotlib
@@ -99,15 +100,6 @@ if __name__ == '__main__':
     print('Individual average accuracy:', ind)
     print('Collaboration average accuracy:', dc)
 
-    try:
-        with open('save/logs' + datetime.datetime.now().strftime("%y-%m-%d-%H-%M")+'.txt', 'w') as log:
-            print(args, file=log)
-            print("Centralized = {}".format(centr), file=log)
-            print("Individual = {}".format(ind), file=log)
-            print("DC= {}".format(dc), file=log)
-                
-    except IOError:
-        print('File Error')
 
     dir_path = "./"
     plt.figure(figsize=(13,5))
@@ -124,3 +116,14 @@ if __name__ == '__main__':
     else:
         pass
     plt.show()
+
+
+    try:
+        with open(dir_path + '/save/logs/dc_%s_%s_%sanc_%s_dim_%susers_iid[%s]_%srun.txt'%(args.dataset, args.model, args.nanc, args.d_ir, args.num_users, args.iid, args.repeat), 'w') as log:
+            print(args, file=log)
+            print("centr = {}".format(centr), file=log)
+            print("ind = {}".format(ind), file=log)
+            print("dc= {}".format(dc), file=log)
+                
+    except IOError:
+        print('File Error')
