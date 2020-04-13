@@ -5,8 +5,11 @@ from sampling import make_anchors, sampling_iid, sampling_noniid
 from keras.datasets import mnist, cifar10, fashion_mnist
 from sklearn.preprocessing import normalize
 import matplotlib.pyplot as plt
+from options import args_parser
 
-def get_dataset(args, nlabel=2):
+args = args_parser()
+
+def get_dataset(args, ndat=args.ndat, nlabel=2):
     '''Return train and test datasets amd user group which is a dict where
     the keys are the user index and the value are the corresponding data 
     for each of those users.
@@ -36,9 +39,9 @@ def get_dataset(args, nlabel=2):
         raise Exception('Passed args')
 
     if args.iid:
-        user_list = sampling_iid(X_train, args.num_users, args.ndat)
+        user_list = sampling_iid(X_train, args.num_users, ndat)
     else:
-        user_list = sampling_noniid(X_train, label_train, args.num_users, args.ndat, nlabel=nlabel)        
+        user_list = sampling_noniid(X_train, label_train, args.num_users, ndat, nlabel=nlabel)        
     
     X_test = X_test[:args.ntest]
     label_test = label_test[:args.ntest]
@@ -98,7 +101,7 @@ def exp_results(centr_score, ind_score, dc_score, fl_score, args):
     print('Test accuracy of FL: ', fl_score[2])
     return
 
-def get_3col_plt(centr_score, ind_score, dc_score, fl_score, args):
+def get_3col_plt(centr_score, ind_score, dc_score, fl_score, args, xlabel, x_val):
     '''
     Prameters
     ---------
@@ -108,33 +111,35 @@ def get_3col_plt(centr_score, ind_score, dc_score, fl_score, args):
         score[2]: test accuracy
     '''
     fig, ax = plt.subplots(1, 3, figsize=(18, 5))
-    ax[0].plot(centr_score[0], marker='.', label='centralized')
-    ax[0].plot(ind_score[0], linestyle='-.', marker='.', label='individual')
-    ax[0].plot(dc_score[0], marker='.', label='data collaboration')
-    ax[0].plot(fl_score[0], marker='.', label='federated learning')
-    ax[0].set_xlabel('Rounds for FL, Epochs for the other methods')
+    x_val = np.array(x_val)
+
+    ax[0].plot(x_val, centr_score[0], marker='.', label='centralized')
+    ax[0].plot(x_val, ind_score[0], linestyle='-.', marker='.', label='individual')
+    ax[0].plot(x_val, dc_score[0], marker='.', label='data collaboration')
+    ax[0].plot(x_val, fl_score[0], marker='.', label='federated learning')
     ax[0].legend()
     ax[0].set_title('Training Loss, NN')
 
-    ax[1].plot(centr_score[1], marker='.', label='centralized')
-    ax[1].plot(ind_score[1], linestyle='-.', marker='.', label='individual')
-    ax[1].plot(dc_score[1], marker='.', label='data collaboration')
-    ax[1].plot(fl_score[1], marker='.', label='federated learning')
-    ax[1].set_xlabel('Rounds for FL, Epochs for the other methods')
+    ax[1].plot(x_val, centr_score[1], marker='.', label='centralized')
+    ax[1].plot(x_val, ind_score[1], linestyle='-.', marker='.', label='individual')
+    ax[1].plot(x_val, dc_score[1], marker='.', label='data collaboration')
+    ax[1].plot(x_val, fl_score[1], marker='.', label='federated learning')
     ax[1].legend()
     ax[1].set_title('Validation Loss, NN')
 
-    ax[2].plot(centr_score[2], marker='.', label='centralized')
-    ax[2].plot(ind_score[2], linestyle='-.', marker='.', label='individual')
-    ax[2].plot(dc_score[2], marker='.', label='data collaboration')
-    ax[2].plot(fl_score[2], marker='.', label='federated learning')
-    ax[2].set_xlabel('Rounds for FL, Epochs for the other methods')
+    ax[2].plot(x_val, centr_score[2], marker='.', label='centralized')
+    ax[2].plot(x_val, ind_score[2], linestyle='-.', marker='.', label='individual')
+    ax[2].plot(x_val, dc_score[2], marker='.', label='data collaboration')
+    ax[2].plot(x_val, fl_score[2], marker='.', label='federated learning')
     ax[2].legend()
     ax[2].set_title('Validation Accuracy, NN')
 
+    for ax in ax.flat:
+        ax.set(xlabel=xlabel)
+
     dir_path = "/Users/nedo_m02/Desktop/pytorch_practice/FL"
     if args.save_fig:
-        plt.savefig(dir_path + '/save/figures/fed_dc_%s_%sanc_%sir_%susers_iid[%s]_%sround_%srun.png'
+        plt.savefig(dir_path + '/save/figures/fed_dc_ndat_%s_%sanc_%sir_%susers_iid[%s]_%sround_%srun.png'
                     % (args.dataset, args.nanc, args.d_ir, args.num_users, args.iid, args.nround, args.repeat))
     else:
         pass
