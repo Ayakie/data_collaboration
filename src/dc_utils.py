@@ -72,13 +72,13 @@ def get_cr(Div_tilde, d_cr):
         maximum val is %s, but got %s" % (min_components, d_cr)
     
     U, s, V = scipy.linalg.svd(anc_merged, lapack_driver='gesvd')
-    Z_T = U[:, :d_cr].T
+    Z = U[:, :d_cr].T
 
     X_hat_list = []
     for i, user in enumerate(Div_tilde):
         
         # construct mapping function g
-        g = np.dot(Z_T, np.linalg.pinv(user['Xanc_tilde'].T))
+        g = np.dot(Z, np.linalg.pinv(user['Xanc_tilde'].T))
         X_hat = np.dot(user['X_tilde'], g.T)
         X_hat_list.append(X_hat)
 
@@ -106,7 +106,7 @@ def data_collaboration(Div_data, method, args, d_ir=args.d_ir):
     '''
     
     d_cr = d_ir
-    n_neighbors = args.n_neighbors
+    # n_neighbors = args.n_neighbors
 
     Div_tilde = []
     for i, user in enumerate(Div_data):

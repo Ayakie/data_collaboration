@@ -3,7 +3,7 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
-from keras.optimizers import SGD, RMSprop, Adadelta, Adam
+from keras.optimizers import SGD, Adadelta, Adam, Adamax
 from keras.models import model_from_config
 from keras.metrics import sparse_categorical_accuracy
 from sklearn.neighbors import KNeighborsClassifier
@@ -13,7 +13,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 # num_class=10
 
 class GlobalModel(object):
-    optimizer_dict = {'sgd': SGD(), 'rmsprop': RMSprop(),
+    optimizer_dict = {'sgd': SGD(), 'adamax': Adamax(),
                   'adadelta': Adadelta(), 'adam': Adam()}
 
     def __init__(self, args, X_train, num_class):

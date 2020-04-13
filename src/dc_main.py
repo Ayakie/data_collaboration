@@ -75,7 +75,7 @@ if __name__ == '__main__':
             for i in range(ii+1):
                 user_idx_i = user_list[i] # caution: row 43
                 Div_data.append({'X':X_train[user_idx_i], 'Xtest':X_test, 'Xanc':Xanc})
-            X_dc, X_test_dc = data_collaboration(Div_data, ir_method, args.d_ir, args)
+            X_dc, X_test_dc = data_collaboration(Div_data, ir_method, args)
             
             dc_model = GlobalModel(args, X_dc, num_class).set_model()
 
@@ -99,10 +99,12 @@ if __name__ == '__main__':
     print('Collaboration average accuracy:', dc)
 
     dir_path = "/Users/nedo_m02/Desktop/pytorch_practice/FL"
+    xval = np.arange(1, args.num_users+1)
+
     plt.figure(figsize=(13,5))
-    plt.plot(centr, label='Centralized', marker=".")
-    plt.plot(ind, label='Indivisual (User1)', marker=".")
-    plt.plot(dc, label='Data Collaboration', marker=".")
+    plt.plot(xval, centr, label='Centralized', marker=".")
+    plt.plot(xval, ind, label='Indivisual (User1)', marker=".")
+    plt.plot(xval, dc, label='Data Collaboration', marker=".")
     plt.xlabel('Number of users')
     plt.ylabel('Accuracy')
     plt.title('Accuracy of {} ({})'.format(args.dataset.upper(), ['IID' if args.iid else 'Non-IID'][0]))

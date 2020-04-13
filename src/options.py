@@ -39,10 +39,10 @@ def args_parser():
                         help='epochs of local training in federated learning')
     parser.add_argument('--batch_size', type=int, default=32,
                         help='batch size of local training in federated learning')
-    parser.add_argument('--nround', type=int, default=24,
+    parser.add_argument('--nround', type=int, default=12,
                         help='number of round for whole training of federated averaging')
-    parser.add_argument('--optimizer', type=str, default='adam',
-                        choices=['sgd', 'rmsprop', 'adadelta', 'adam'], help='optimizer for training')
+    parser.add_argument('--optimizer', type=str, default='adamax',
+                        choices=['sgd', 'adamax', 'adadelta', 'adam'], help='optimizer for training of neural network')
     parser.add_argument('--verbose', type=int, default=1, help='verbose')
     parser.add_argument('--seed', type=int, default=1, help='random seed')
 
