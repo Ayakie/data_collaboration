@@ -23,7 +23,7 @@ def args_parser():
     # data arguments
     parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion_mnist', 'cifar'],
                         default='fashion_mnist', help="name of dataset")
-    parser.add_argument('--iid', type=int, default=0,
+    parser.add_argument('--iid', type=int, default=1,
                         help='Default set to IID. Set to 0 for non-IID.')
 
     # model arguments

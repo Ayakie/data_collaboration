@@ -99,6 +99,16 @@ if __name__ == '__main__':
     print('Individual average accuracy:', ind)
     print('Collaboration average accuracy:', dc)
 
+    try:
+        with open('save/logs' + datetime.datetime.now().strftime("%y-%m-%d-%H-%M")+'.txt', 'w') as log:
+            print(args, file=log)
+            print("Centralized = {}".format(centr), file=log)
+            print("Individual = {}".format(ind), file=log)
+            print("DC= {}".format(dc), file=log)
+                
+    except IOError:
+        print('File Error')
+
     dir_path = "./"
     plt.figure(figsize=(13,5))
     plt.plot(centr, label='Centralized', marker=".")
