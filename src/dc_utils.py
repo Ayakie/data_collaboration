@@ -7,8 +7,11 @@ from sklearn.manifold import LocallyLinearEmbedding
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from packages.lpproj_LPP import LocalityPreservingProjection as LPP
+from options import args_parser
 
-def get_ir(X, Xtest, Xanc, method, d_ir, args):
+args = args_parser()
+
+def get_ir(X, Xtest, Xanc, method, args, d_ir=args.d_ir):
     
     if method == 'PCA':
         f = PCA(d_ir, svd_solver='full')
@@ -22,7 +25,7 @@ def get_ir(X, Xtest, Xanc, method, d_ir, args):
     elif method == 'LLE':
         f = LocallyLinearEmbedding(n_components=d_ir, n_neighbors=args.n_neighbors)
 
-    else:
+    elif method == 'SVD':
         # Either "arpack" for the ARPACK wrapper in SciPy
         # (scipy.sparse.linalg.svds), or "randomized" for the randomized
         # algorithm due to Halko (2009).
@@ -32,6 +35,8 @@ def get_ir(X, Xtest, Xanc, method, d_ir, args):
 #         X_tilde = np.dot(X, f.T)
 #         Xanc_tilde = np.dot(l, f.T)
 #         Xtest_tilde = np.dot(X_test, f.T)
+    else:
+        raise Exception('No method')
     
     f.fit(X)
     X_tilde = f.transform(X)
@@ -65,13 +70,15 @@ def get_cr(Div_tilde, d_cr):
     # check dimension
     assert min_components >= d_cr, "n_components is too large, \
         maximum val is %s, but got %s" % (min_components, d_cr)
+    
+    U, s, V = scipy.linalg.svd(anc_merged, lapack_driver='gesvd')
+    Z_T = U[:, :d_cr].T
 
     X_hat_list = []
     for i, user in enumerate(Div_tilde):
-        U, s, V = scipy.linalg.svd(anc_merged, lapack_driver='gesvd')
-        Z_T = U[:, :d_cr].T
+        
         # construct mapping function g
-        g = np.dot(Z_T, np.linalg.pinv(user['Xanc_tilde']).T)
+        g = np.dot(Z_T, np.linalg.pinv(user['Xanc_tilde'].T))
         X_hat = np.dot(user['X_tilde'], g.T)
         X_hat_list.append(X_hat)
 
@@ -82,18 +89,18 @@ def get_cr(Div_tilde, d_cr):
     return X_hat_list, Xtest_hat
 
 # To do: enable to select different method per user
-def data_collaboration(Div_data, method, d_ir, args):
+def data_collaboration(Div_data, method, args, d_ir=args.d_ir):
     '''compute whole process of DC
     
     Parameters
     ----------
     Div_data: list
         each element has a dict whose keys are 
-        "X", "Xtest", "Xanc", "label_train", "label_test"
+        "X", "Xtest", "Xanc"
     method: str
         method of dimensionally reduction(PCA, LLE, LPP, SVD)
     d: dimension of intermediate representation
-    d_cr: usually it is equal to d
+    d_cr: usually it is equal to d_ir
         dimention of left singular vector U
     
     '''
@@ -103,7 +110,7 @@ def data_collaboration(Div_data, method, d_ir, args):
 
     Div_tilde = []
     for i, user in enumerate(Div_data):
-        X_tilde, Xtest_tilde, Xanc_tilde = get_ir(user['X'], user['Xtest'], user['Xanc'], method, d_ir, args)
+        X_tilde, Xtest_tilde, Xanc_tilde = get_ir(user['X'], user['Xtest'], user['Xanc'], method, args, d_ir)
         Div_tilde.append({'X_tilde': X_tilde, 'Xtest_tilde': Xtest_tilde, 'Xanc_tilde': Xanc_tilde})
     
     X_hat_list, Xtest_hat = get_cr(Div_tilde, d_cr)
