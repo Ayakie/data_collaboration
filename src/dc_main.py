@@ -24,9 +24,10 @@ ndat = 100                # size of data portions
 nanc = 500                # number of anchor data
 n_neighbors = 6           # for LLE, LPP, KNN
 d_ir = 50                 # dimension of intermediate representation(half of ndat)
-repeat = 3                # number of repeat to experiment(≒epochs)
-anc_type = 'random'  
+repeat = 3                # number of repeat to experiment(epochs)
 '''
+anc_type = 'random'  
+
 args = args_parser()
 ir_method = 'PCA'           # method to make IR
 
@@ -38,13 +39,13 @@ if __name__ == '__main__':
     start_time= time.time()
 
     for r in range(args.repeat):
-        print(f'Round {r+1}')
+        print(f"Round {r+1}")
         random.seed(args.seed)
         X_train, label_train, X_test, label_test, user_list = get_dataset(args)
         assert len(label_test) == args.ntest
 
         for ii in tqdm(range(args.num_users)):
-            print(f'User {ii+1}: {Counter(label_train[user_list[ii]])}') 
+            print(f"User {ii+1}: {Counter(label_train[user_list[ii]])}") 
 
             # Main
             # train classifier on all data
@@ -98,7 +99,7 @@ if __name__ == '__main__':
     print('Individual average accuracy:', ind)
     print('Collaboration average accuracy:', dc)
 
-    dir_path = "/Users/nedo_m02/Desktop/pytorch_practice/FL"
+    dir_path = "./"
     plt.figure(figsize=(13,5))
     plt.plot(centr, label='Centralized', marker=".")
     plt.plot(ind, label='Indivisual (User1)', marker=".")
