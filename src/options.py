@@ -7,7 +7,7 @@ def args_parser():
     # dc arguments
     parser.add_argument('--num_users', type=int, default=10,
                         help="number of users: K")
-    parser.add_argument('--repeat', type=int, default=3,
+    parser.add_argument('--repeat', type=int, default=5,
                         help='number of repeat(epoch) of dc analysis')
     parser.add_argument('--ndat', type=int, default=100,
                         help="number of data per users: N")
