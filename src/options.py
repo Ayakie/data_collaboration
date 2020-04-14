@@ -28,7 +28,7 @@ def args_parser():
 
     # model arguments
     parser.add_argument('--model', type=str, default='mlp',
-                        choices=['mlp', 'cnn', 'cnn1d' 'knn'])
+                        choices=['mlp', 'cnn', 'cnn1d', 'knn'])
     parser.add_argument('--n_neighbors', type=int, default=6,
                         help='for LLE, LPP, KNN classifier')
     parser.add_argument('--lr', type=int, default=0.05,
