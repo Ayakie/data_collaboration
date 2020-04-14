@@ -30,6 +30,9 @@ class GlobalModel(object):
                 model = self.cnn_fashion_mnist()
             elif self.args.dataset == 'cifar':
                 model = self.cnn_cifar()
+        elif self.args.model == 'cnn1d':
+            if self.args.dataset == 'mnist':
+                model = self.cnn1d_mnist()
         elif self.args.model == 'mlp':
             model = self.mlp()
         elif self.args.model == 'knn':
@@ -74,7 +77,7 @@ class GlobalModel(object):
                       optimizer=self.optimizer, metrics=[sparse_categorical_accuracy])
 
         return model
-        
+
  def cnn1d_mnist(self):
 
         model = Sequential()
