@@ -42,7 +42,7 @@ if __name__ == '__main__':
     for r in range(args.repeat):
         print(f"Round {r+1}")
         random.seed(args.seed)
-        X_train, label_train, X_test, label_test, user_list = get_dataset(args)
+        X_train, label_train, X_test, label_test, user_list, anc_sample = get_dataset(args)
         assert len(label_test) == args.ntest
 
         for ii in tqdm(range(args.num_users)):
@@ -72,6 +72,7 @@ if __name__ == '__main__':
 
             # Proposed method(User 1 has test data)
             # pseudo-split of data
+
             Xanc = make_anchors(X_train, args.nanc, args)
             Div_data = []
             for i in range(ii+1):
@@ -121,9 +122,9 @@ if __name__ == '__main__':
     try:
         with open(dir_path + '/save/logs/dc_%s_%s_%sanc_%s_dim_%susers_iid[%s]_%srun.txt'%(args.dataset, args.model, args.nanc, args.d_ir, args.num_users, args.iid, args.repeat), 'w') as log:
             print(args, file=log)
-            print("centr = {}".format(centr), file=log)
-            print("ind = {}".format(ind), file=log)
-            print("dc= {}".format(dc), file=log)
+            print(centr, file=log)
+            print(ind, file=log)
+            print(dc, file=log)
                 
     except IOError:
         print('File Error')

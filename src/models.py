@@ -75,6 +75,7 @@ class GlobalModel(object):
 
         return model
 
+
     def cnn_fashion_mnist(self):
 
         model = Sequential()

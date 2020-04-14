@@ -14,7 +14,7 @@ def args_parser():
     parser.add_argument('--ntest', type=int, default=1000,
                         help='number of test data')
     parser.add_argument('--anc_type', type=str, default='random',
-                        choices=['random', 'gan'], help="method to create anchor data")
+                        choices=['random', 'gan', 'sample'], help="method to create anchor data")
     parser.add_argument('--nanc', type=int, default=500,
                         help="number of anchor data")
     parser.add_argument('--d_ir', type=int, default=50, help='dimension \

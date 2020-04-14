@@ -10,14 +10,18 @@ def make_anchors(X_train, nanc, args):
     --------------
     nanc: number of anchor data
     X_train: training data to get min(max) value of feature
-    anc_type: 'random', 'gan'
+    anc_type: 'random', 'gan', 'sample'
     
     '''
     if args.anc_type == 'random':
         
         Xanc = np.random.uniform(low=np.min(X_train), high=np.max(X_train), size=(nanc, X_train.shape[1]))
         Xanc = normalize(Xanc)
-    
+
+    elif args.anc_type == 'sample':
+        idx = np.random.choice(len(X_train), nanc, replace=False)
+        Xanc = X_train[idx]
+
     return Xanc
 
 def sampling_iid(X_train, num_users, ndat):
