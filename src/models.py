@@ -78,7 +78,7 @@ class GlobalModel(object):
 
         return model
 
- def cnn1d_mnist(self):
+    def cnn1d_mnist(self):
 
         model = Sequential()
         model.add(Conv1D(10, kernel_size=5, activation='relu',
