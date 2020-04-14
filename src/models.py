@@ -74,7 +74,26 @@ class GlobalModel(object):
                       optimizer=self.optimizer, metrics=[sparse_categorical_accuracy])
 
         return model
+        
+ def cnn1d_mnist(self):
 
+        model = Sequential()
+        model.add(Conv1D(10, kernel_size=5, activation='relu',
+                         input_shape=self.input_shape))  # 1x28x28 -> 10x24x24
+        model.add(MaxPooling1D(pool_size=2))  # 10x24x24 -> 10x12x12
+        # 10x12x12 -> 20x8x8
+        model.add(Conv1D(20, kernel_size=5, activation='relu'))
+        model.add(Dropout(0.25))
+        model.add(MaxPooling1D(pool_size=2))  # 20x8x8 -> 20x4x4
+        model.add(Flatten())  # 20x4x4 -> 20*4*4
+        model.add(Dense(50, activation='relu'))
+        model.add(Dropout(0.25))
+        model.add(Dense(self.num_class, activation='softmax'))
+
+        model.compile(loss='sparse_categorical_crossentropy',
+                      optimizer=self.optimizer, metrics=[sparse_categorical_accuracy])
+
+        return model
 
     def cnn_fashion_mnist(self):
 
