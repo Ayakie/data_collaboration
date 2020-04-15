@@ -1,12 +1,13 @@
 import numpy as np
 import keras
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
+from keras.layers import Dense, Dropout, Flatten, Reshape
+from keras.layers import Conv2D, Conv1D, MaxPooling2D, MaxPooling1D, BatchNormalization
 from keras.optimizers import SGD, RMSprop, Adadelta, Adam
 from keras.models import model_from_config
 from keras.metrics import sparse_categorical_accuracy
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn import svm
 from sklearn.ensemble import GradientBoostingClassifier
 
 # input_shape= X_train.shape[1:]
@@ -37,6 +38,8 @@ class GlobalModel(object):
             model = self.mlp()
         elif self.args.model == 'knn':
             model = self.knn_cls()
+        elif self.args.model == 'svm':
+            model = self.svm_cls()
         else:
             raise Exception('Passed args')
         
@@ -81,14 +84,13 @@ class GlobalModel(object):
     def cnn1d_mnist(self):
 
         model = Sequential()
-        model.add(Conv1D(10, kernel_size=5, activation='relu',
-                         input_shape=self.input_shape))  # 1x28x28 -> 10x24x24
-        model.add(MaxPooling1D(pool_size=2))  # 10x24x24 -> 10x12x12
-        # 10x12x12 -> 20x8x8
+        model.add(Reshape((self.input_shape[0], 1), input_shape=self.input_shape))
+        model.add(Conv1D(10, kernel_size=5, activation='relu')) 
+        model.add(MaxPooling1D(pool_size=2))  
         model.add(Conv1D(20, kernel_size=5, activation='relu'))
         model.add(Dropout(0.25))
-        model.add(MaxPooling1D(pool_size=2))  # 20x8x8 -> 20x4x4
-        model.add(Flatten())  # 20x4x4 -> 20*4*4
+        model.add(MaxPooling1D(pool_size=2))  
+        model.add(Flatten()) 
         model.add(Dense(50, activation='relu'))
         model.add(Dropout(0.25))
         model.add(Dense(self.num_class, activation='softmax'))
@@ -143,6 +145,11 @@ class GlobalModel(object):
         model = KNeighborsClassifier(n_neighbors=self.args.n_neighbors)
         # model.fit(X_train, label_train.ravel())
         # score = model.score(X_test, label_test.ravel())
+
+        return model
+
+    def svm_cls(self):
+        model = svm.SVC(C=200,kernel='rbf',gamma=0.01)
 
         return model
     

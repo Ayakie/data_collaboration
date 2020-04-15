@@ -42,7 +42,7 @@ if __name__ == '__main__':
     for r in range(args.repeat):
         print(f"Round {r+1}")
         random.seed(args.seed)
-        X_train, label_train, X_test, label_test, user_list, anc_sample = get_dataset(args)
+        X_train, label_train, X_test, label_test, user_list = get_dataset(args)
         assert len(label_test) == args.ntest
 
         for ii in tqdm(range(args.num_users)):
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
             centr_model = GlobalModel(args, X_all, num_class).set_model()
             
-            if args.model == 'knn':
+            if args.model == 'knn' or 'svm':
                 centr_model.fit(X_all, label_all)
                 centr = centr_model.score(X_test, label_test)
             else: # keras model
@@ -82,7 +82,7 @@ if __name__ == '__main__':
             
             dc_model = GlobalModel(args, X_dc, num_class).set_model()
 
-            if args.model == 'knn':
+            if args.model == 'knn' or 'svm':
                 dc_model.fit(X_dc, label_all)
                 dc = dc_model.score(X_test_dc, label_test)
             else:

@@ -21,6 +21,7 @@ def make_anchors(X_train, nanc, args):
     elif args.anc_type == 'sample':
         idx = np.random.choice(len(X_train), nanc, replace=False)
         Xanc = X_train[idx]
+        Xanc = normalize(Xanc)
 
     return Xanc
 
