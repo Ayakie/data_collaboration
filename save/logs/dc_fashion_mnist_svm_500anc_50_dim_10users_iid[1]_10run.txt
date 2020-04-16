@@ -1,4 +1,0 @@
-Namespace(anc_type='random', batch_size=32, d_ir=50, dataset='fashion_mnist', epoch=3, iid=1, lr=0.05, max_depth=10, model='svm', n_neighbors=6, nanc=500, ndat=50, nround=24, ntest=1000, num_users=10, optimizer='adam', repeat=10, save_fig=1, seed=1, verbose=1)
-[0.605 0.689 0.721 0.741 0.754 0.77  0.78  0.787 0.788 0.795]
-[0.605 0.605 0.605 0.605 0.605 0.605 0.605 0.605 0.605 0.605]
-[0.548 0.648 0.685 0.703 0.714 0.723 0.727 0.737 0.742 0.745]

@@ -30,7 +30,7 @@ repeat = 3                # number of repeat to experiment(epochs)
 anc_type = 'random'  
 
 args = args_parser()
-ir_method = 'PCA'           # method to make IR
+ir_method = 'SVD'           # method to make IR
 
 if __name__ == '__main__':
     acc_cntr = np.zeros([args.repeat, args.num_users])
@@ -120,7 +120,7 @@ if __name__ == '__main__':
 
 
     try:
-        with open(dir_path + '/save/logs/dc_%s_%s_%sndat_%s_dim_%s_%srun.txt'%(args.dataset, args.model, args.ndat, args.d_ir, args.num_users, args.repeat), 'w') as log:
+        with open(dir_path + '/save/logs/dc_%s_%s_%sndat_%s_dim.txt'%(args.dataset, args.model, args.ndat, args.d_ir), 'w') as log:
             print(args, file=log)
             print(centr, file=log)
             print(ind, file=log)

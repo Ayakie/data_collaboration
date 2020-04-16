@@ -11,7 +11,7 @@ from packages.lpproj_LPP import LocalityPreservingProjection as LPP
 def get_ir(X, Xtest, Xanc, method, d_ir, args):
     
     if method == 'PCA':
-        f = PCA(d_ir, svd_solver='full')
+        f = PCA(d_ir, svd_solver='arpack')
     
     elif method == 'ICA':
         f = FastICA(d_ir)
@@ -32,6 +32,12 @@ def get_ir(X, Xtest, Xanc, method, d_ir, args):
 #         X_tilde = np.dot(X, f.T)
 #         Xanc_tilde = np.dot(l, f.T)
 #         Xtest_tilde = np.dot(X_test, f.T)
+        U1,S1,V1 = scipy.linalg.svd(X, lapack_driver='gesvd')
+        F = V1[:d_ir,:]
+        X_tilde = np.dot(X, F.T)
+        Xanc_tilde = np.dot(Xanc, F.T)
+        Xtest_tilde = np.dot(Xtest, F.T)
+        return X_tilde, Xtest_tilde, Xanc_tilde
     
     f.fit(X)
     X_tilde = f.transform(X)
