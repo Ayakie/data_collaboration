@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
             centr_model = GlobalModel(args, X_all, num_class).set_model()
             
-            if args.model == 'knn' or 'svm':
+            if args.model == 'knn' or args.model =='svm':
                 centr_model.fit(X_all, label_all)
                 centr = centr_model.score(X_test, label_test)
             else: # keras model
@@ -82,7 +82,7 @@ if __name__ == '__main__':
             
             dc_model = GlobalModel(args, X_dc, num_class).set_model()
 
-            if args.model == 'knn' or 'svm':
+            if args.model == 'knn' or args.model =='svm':
                 dc_model.fit(X_dc, label_all)
                 dc = dc_model.score(X_test_dc, label_test)
             else:
@@ -120,7 +120,7 @@ if __name__ == '__main__':
 
 
     try:
-        with open(dir_path + '/save/logs/dc_%s_%s_%sanc_%s_dim_%susers_iid[%s]_%srun.txt'%(args.dataset, args.model, args.nanc, args.d_ir, args.num_users, args.iid, args.repeat), 'w') as log:
+        with open(dir_path + '/save/logs/dc_%s_%s_%sndat_%s_dim_%s_%srun.txt'%(args.dataset, args.model, args.ndat, args.d_ir, args.num_users, args.repeat), 'w') as log:
             print(args, file=log)
             print(centr, file=log)
             print(ind, file=log)

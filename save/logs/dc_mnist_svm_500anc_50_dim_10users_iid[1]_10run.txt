@@ -1,4 +1,4 @@
-Namespace(anc_type='random', batch_size=32, d_ir=50, dataset='mnist', epoch=3, iid=1, lr=0.05, max_depth=10, model='svm', n_neighbors=6, nanc=500, ndat=50, nround=24, ntest=1000, num_users=10, optimizer='adam', repeat=10, save_fig=1, seed=1, verbose=1)
-[0.585 0.718 0.771 0.797 0.819 0.837 0.849 0.857 0.865 0.873]
-[0.585 0.585 0.585 0.585 0.585 0.585 0.585 0.585 0.585 0.585]
-[0.399 0.632 0.701 0.731 0.756 0.775 0.787 0.802 0.816 0.821]
+Namespace(anc_type='random', batch_size=32, d_ir=50, dataset='mnist', epoch=3, iid=1, lr=0.05, max_depth=10, model='svm', n_neighbors=6, nanc=500, ndat=100, nround=24, ntest=1000, num_users=10, optimizer='adam', repeat=10, save_fig=1, seed=1, verbose=1)
+[0.726 0.814 0.848 0.861 0.875 0.88  0.889 0.893 0.897 0.903]
+[0.726 0.726 0.726 0.726 0.726 0.726 0.726 0.726 0.726 0.726]
+[0.551 0.772 0.823 0.848 0.864 0.873 0.882 0.885 0.887 0.892]

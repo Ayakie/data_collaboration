@@ -149,7 +149,7 @@ class GlobalModel(object):
         return model
 
     def svm_cls(self):
-        model = svm.SVC(C=200,kernel='rbf',gamma=0.01)
+        model = svm.SVC(C=10,kernel='rbf',gamma=0.01)
 
         return model
     

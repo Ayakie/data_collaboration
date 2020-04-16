@@ -1,0 +1,4 @@
+Namespace(anc_type='random', batch_size=32, d_ir=50, dataset='mnist', epoch=3, iid=1, lr=0.05, max_depth=10, model='svm', n_neighbors=5, nanc=500, ndat=50, nround=24, ntest=1000, num_users=10, optimizer='adam', repeat=10, save_fig=1, seed=1, verbose=1)
+[0.606 0.73  0.784 0.815 0.837 0.854 0.86  0.867 0.873 0.877]
+[0.606 0.606 0.606 0.606 0.606 0.606 0.606 0.606 0.606 0.606]
+[0.398 0.63  0.705 0.748 0.774 0.787 0.805 0.819 0.828 0.828]
