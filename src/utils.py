@@ -4,49 +4,62 @@ from models import GlobalModel
 from sampling import make_anchors, sampling_iid, sampling_noniid
 from keras.datasets import mnist, cifar10, fashion_mnist
 from sklearn.preprocessing import normalize
+from sklearn.model_selection import train_test_split
+
 import matplotlib.pyplot as plt
 from options import args_parser
 
+
 args = args_parser()
 
-def get_dataset(args, ndat=args.ndat, nlabel=2):
-    '''Return train and test datasets amd user group which is a dict where
-    the keys are the user index and the value are the corresponding data 
-    for each of those users.
+def get_dataset(args, nlabel=2, anc_size=0.02, ndat=args.ndat, num_users=args.num_users):
+    '''Return train, anchor, test datasets and user group list
+
+    Parameters
+    ------------
+    args: args_parser()
+    nlabel: int(2~9)
+        How many labels each user has 
+        reference: https://github.com/AshwinRJ/Federated-Learning-PyTorch
+    
+    anc_size: default(0.02 x 60000 = 1200 data)
+        ratio to train dataset to generate anchor data
+
     '''
 
     if args.dataset == 'mnist':
         (X_train, label_train), (X_test, label_test) = mnist.load_data()
-        # reshape
-        X_train = X_train.reshape(X_train.shape[0], -1) / 255
-        X_test = X_test.reshape(X_test.shape[0], -1) /255
     
     elif args.dataset == 'fashion_mnist':
         (X_train, label_train), (X_test, label_test) = fashion_mnist.load_data()
-        # reshape
-        X_train = X_train.reshape(X_train.shape[0], -1) / 255
-        X_test = X_test.reshape(X_test.shape[0], -1) / 255
 
     elif args.dataset == 'cifar':
         (X_train, label_train), (X_test, label_test) = cifar10.load_data()
         label_train = label_train.ravel()
         label_test = label_test.ravel()
         
-        # reshape
-        X_train = X_train.reshape(X_train.shape[0], -1) / 255
-        X_test = X_test.reshape(X_test.shape[0], -1) / 255
     else:
         raise Exception('Passed args')
+    
+    # pick up generating anchor data from train data
+    X_train, X_anc, label_train, _ = train_test_split(X_train, label_train, test_size=anc_size, random_state=42, shuffle=True)
 
     if args.iid:
-        user_list = sampling_iid(X_train, args.num_users, ndat)
+        user_list = sampling_iid(X_train, num_users, ndat)
     else:
-        user_list = sampling_noniid(X_train, label_train, args.num_users, ndat, nlabel=nlabel)        
+        user_list = sampling_noniid(X_train, label_train, num_users, ndat, nlabel=nlabel)        
     
+
+    # reshape
+    X_train = X_train.reshape(X_train.shape[0], -1) / 255
+    X_test = X_test.reshape(X_test.shape[0], -1) / 255
+    X_anc = X_anc.reshape(X_anc.shape[0], -1) / 255
+    
+    # pick up test data
     X_test = X_test[:args.ntest]
     label_test = label_test[:args.ntest]
 
-    return X_train, label_train, X_test, label_test, user_list
+    return X_train, X_test, X_anc, label_train, label_test, user_list
 
 
 def fed_avg(user_weight_list, user_ndat_list):
@@ -139,8 +152,8 @@ def get_3col_plt(centr_score, ind_score, dc_score, fl_score, args, xlabel, x_val
 
     dir_path = "/Users/nedo_m02/Desktop/pytorch_practice/FL"
     if args.save_fig:
-        plt.savefig(dir_path + '/save/figures/fed_dc_ndat_%s_%sanc_%sir_%susers_iid[%s]_%sround_%srun.png'
-                    % (args.dataset, args.nanc, args.d_ir, args.num_users, args.iid, args.nround, args.repeat))
+        plt.savefig(dir_path + '/save/figures/fed_dc_%s_%sanc_%s_%sir_%susers_iid[%s]_%sround_%srun.png'
+                    % (args.dataset, args.nanc, args.anc_type, args.d_ir, args.num_users, args.iid, args.nround, args.repeat))
     else:
         pass
     plt.show()
