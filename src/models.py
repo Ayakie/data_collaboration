@@ -1,16 +1,13 @@
 import numpy as np
 import keras
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten
+from keras.layers import Dense, Dropout, Flatten, Reshape
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
 from keras.optimizers import SGD, Adadelta, Adam, Adamax
-from keras.models import model_from_config
 from keras.metrics import sparse_categorical_accuracy
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 
-# input_shape= X_train.shape[1:]
-# num_class=10
 
 class GlobalModel(object):
     optimizer_dict = {'sgd': SGD(), 'adamax': Adamax(),
@@ -97,6 +94,7 @@ class GlobalModel(object):
     def cnn_cifar(self):
 
         model = Sequential()
+        model.add(Reshape((32, 32, 3), input_shape=self.input_shape))
         model.add(Conv2D(32, kernel_size=(5, 5), padding='same',
                          activation='relu', input_shape=self.input_shape))  # 32x32x32
         model.add(MaxPooling2D((2, 2)))  # 32x16x16
@@ -118,22 +116,6 @@ class GlobalModel(object):
     # Simple KNN Classifier
     def knn_cls(self):
         model = KNeighborsClassifier(n_neighbors=self.args.n_neighbors)
-        # model.fit(X_train, label_train.ravel())
-        # score = model.score(X_test, label_test.ravel())
 
         return model
     
-    # def gf_cls(self, X_train, X_test, label_train, label_test, lr = self.args.lr, max_depth=self.args.max_depth):
-    #     # sklearn default: lr=0.1, max_depth=3
-    #     # args default: lr = 0.05, max_depth=10
-    #     model = GradientBoostingClassifier(learning_rate=lr, max_depth=max_depth) 
-
-# class LocalUpdate(GlobalModel):
-#     def __init__(self, args, input_shape, num_class, local_model, user_idx, div_data):
-#         super().__init__(args, input_shape, num_class)
-#         self.local_model = local_model
-#         self.idx = user_idx
-#         self.dataset = div_data
-
-#     def fit(self):
-#         self.local_model.fit(self.dataset[self.idx]['X'], self.dataset[self.idx]['label_train'], batch_size=self.args.batch_size, epochs=self.args.epoch, validation_data=)
