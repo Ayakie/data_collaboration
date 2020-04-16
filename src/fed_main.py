@@ -36,7 +36,7 @@ if __name__ == '__main__':
     acc_ind = np.zeros([args.repeat, args.num_users])
     acc_fed = np.zeros([args.repeat, args.num_users])
 
-    start_time= time.time()
+    #start_time= time.time()
 
     for r in range(args.repeat):
         print(f"Round {r+1}")
@@ -65,16 +65,58 @@ if __name__ == '__main__':
                 # train classifier on data of one user
                 ind = centr
             acc_ind[r, ii] = ind
+
+            Div_data = []
+            for i in range(ii+1):
+                user_idx_i = user_list[i] # caution: row 43
+                Div_data.append({'X':X_train[user_idx_i], 'Xtest':X_test})
             
-            # federated learning
-            print('----- Federated Learning -----')
+            start_time= time.time()
+            # # federated learning Annas version
+            # print('----- Federated Learning -----')
+            
+            # fl_model = GlobalModel(args, X_all, num_class).set_model()
+
+            # for rr in range(args.nround):
+            #     print(f'==== Round {rr+1} / {args.nround} =====')
+                
+            #     deltas = []
+
+            #     for c in range(len(Div_data)):
+
+            #         local_model = GlobalModel(args, X_all, num_class).set_model()
+            #         local_model.set_weights(fl_model.get_weights())  # current_weight
+
+
+            #         local_model.fit(X_train[user_list[c]], label_train[user_list[c]], batch_size=args.batch_size,
+            #                         epochs=args.epoch, validation_data=(X_test, label_test), verbose=0)
+
+                    
+            #         delta = np.array(fl_model.get_weights()) - np.array(local_model.get_weights())
+
+            #         deltas.append(delta)
+
+            #     delt_concat = np.vstack(deltas)
+            #     delt_sum = np.sum(delt_concat, axis=0)
+            #     delt_av = delt_sum / len(deltas)
+            #     new_weights = np.array(fl_model.get_weights()) - delt_av
+
+            #     fl_model.set_weights(new_weights)
+                
+            # fed = fl_model.evaluate(X_test, label_test)
+            # acc_fed[r, ii] = fed[1]
+            # end_time = time.time()
+            # print('Time for computation: ', end_time - start_time)
+
+
+            # federated learning Nakai's version
             fl_model = GlobalModel(args, X_all, num_class).set_model()
 
             for rr in range(args.nround):
                 print(f'==== Round {rr+1} / {args.nround} =====')
 
                 user_w_list, user_ndat_list = [], []
-                for c in range(args.num_users):
+                for c in range(len(Div_data)):
 
                     # get a global model and set fedavg weight to it
                     local_model = GlobalModel(args, X_all, num_class).set_model()
@@ -104,10 +146,10 @@ if __name__ == '__main__':
                 # print(f'Accuracy of FL in round {rr+1}: {fl_test_score[1]}')
 
             fed = fl_model.evaluate(X_test, label_test)
-            acc_fed[r, ii] = fed[0]
+            acc_fed[r, ii] = fed[1]
             
-    end_time = time.time()
-    print('Time for computation: ', end_time - start_time)
+    # end_time = time.time()
+    # print('Time for computation: ', end_time - start_time)
     centr = np.round(np.mean(acc_cntr, 0), decimals=3)
     ind = np.round(np.mean(acc_ind, 0), decimals=3)
     fed = np.round(np.mean(acc_fed, 0), decimals=3)
@@ -122,7 +164,7 @@ if __name__ == '__main__':
     plt.figure(figsize=(13,5))
     plt.plot(centr, label='Centralized', marker=".")
     plt.plot(ind, label='Indivisual (User1)', marker=".")
-    plt.plot(dc, label='Federated Learning', marker=".")
+    plt.plot(fed, label='Federated Learning', marker=".")
     plt.xlabel('Number of users')
     plt.ylabel('Accuracy')
     plt.title('Accuracy of {} ({})'.format(args.dataset.upper(), ['IID' if args.iid else 'Non-IID'][0]))
