@@ -11,10 +11,10 @@ from options import args_parser
 
 args = args_parser()
 
-def get_ir(X, Xtest, Xanc, method, args, d_ir=args.d_ir):
+def get_ir(X, Xtest, anc, method, args, d_ir=args.d_ir):
     
     if method == 'PCA':
-        f = PCA(d_ir, svd_solver='full')
+        f = PCA(d_ir, svd_solver='randomized') # svd_solver='full'
     
     elif method == 'ICA':
         f = FastICA(d_ir)
@@ -33,7 +33,7 @@ def get_ir(X, Xtest, Xanc, method, args, d_ir=args.d_ir):
 #         U1,s1,V1_T = sc.linalg.svd(X, lapack_driver='gesvd')
 #         f = V1_T[:d,:]
 #         X_tilde = np.dot(X, f.T)
-#         Xanc_tilde = np.dot(l, f.T)
+#         anc_tilde = np.dot(l, f.T)
 #         Xtest_tilde = np.dot(X_test, f.T)
     else:
         raise Exception('No method')
@@ -41,9 +41,9 @@ def get_ir(X, Xtest, Xanc, method, args, d_ir=args.d_ir):
     f.fit(X)
     X_tilde = f.transform(X)
     Xtest_tilde = f.transform(Xtest)
-    Xanc_tilde = f.transform(Xanc)
+    anc_tilde = f.transform(anc)
         
-    return X_tilde, Xtest_tilde, Xanc_tilde
+    return X_tilde, Xtest_tilde, anc_tilde
 
 
 def get_cr(Div_tilde, d_cr):
@@ -61,10 +61,10 @@ def get_cr(Div_tilde, d_cr):
     
     '''
     
-    anc_merged = np.hstack([i['Xanc_tilde'] for i in Div_tilde])
+    anc_merged = np.hstack([i['anc_tilde'] for i in Div_tilde])
     
     # number of dimension of anchors per each user
-    anc_list_dims = [i['Xanc_tilde'].shape[1] for i in Div_tilde]
+    anc_list_dims = [i['anc_tilde'].shape[1] for i in Div_tilde]
     min_components = min(anc_list_dims)
     
     # check dimension
@@ -78,7 +78,7 @@ def get_cr(Div_tilde, d_cr):
     for i, user in enumerate(Div_tilde):
         
         # construct mapping function g
-        g = np.dot(Z, np.linalg.pinv(user['Xanc_tilde'].T))
+        g = np.dot(Z, np.linalg.pinv(user['anc_tilde'].T))
         X_hat = np.dot(user['X_tilde'], g.T)
         X_hat_list.append(X_hat)
 
@@ -89,14 +89,14 @@ def get_cr(Div_tilde, d_cr):
     return X_hat_list, Xtest_hat
 
 # To do: enable to select different method per user
-def data_collaboration(Div_data, method, args, d_ir=args.d_ir):
+def data_collaboration(Div_data, method, args, d_cr=args.d_ir):
     '''compute whole process of DC
     
     Parameters
     ----------
     Div_data: list
         each element has a dict whose keys are 
-        "X", "Xtest", "Xanc"
+        "X", "Xtest", "anc"
     method: str
         method of dimensionally reduction(PCA, LLE, LPP, SVD)
     d: dimension of intermediate representation
@@ -105,13 +105,12 @@ def data_collaboration(Div_data, method, args, d_ir=args.d_ir):
     
     '''
     
-    d_cr = d_ir
     # n_neighbors = args.n_neighbors
 
     Div_tilde = []
     for i, user in enumerate(Div_data):
-        X_tilde, Xtest_tilde, Xanc_tilde = get_ir(user['X'], user['Xtest'], user['Xanc'], method, args, d_ir)
-        Div_tilde.append({'X_tilde': X_tilde, 'Xtest_tilde': Xtest_tilde, 'Xanc_tilde': Xanc_tilde})
+        X_tilde, Xtest_tilde, anc_tilde = get_ir(user['X'], user['Xtest'], user['anc'], method, args, args.d_ir)
+        Div_tilde.append({'X_tilde': X_tilde, 'Xtest_tilde': Xtest_tilde, 'anc_tilde': anc_tilde})
     
     X_hat_list, Xtest_hat = get_cr(Div_tilde, d_cr)
     X_hat_all = np.vstack(X_hat_list)

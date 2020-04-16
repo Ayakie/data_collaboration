@@ -31,8 +31,8 @@ if __name__ == '__main__':
 
     for r in range(args.repeat):
         print('Repeat: ', r+1)
-        random.seed(args.seed)
-        X_train, label_train, X_test, label_test, user_list = get_dataset(args)
+        random.seed(r)
+        X_train, X_test, X_anc, label_train, label_test, user_list = get_dataset(args)
 
         # Main
         idx_all = np.ravel(user_list).tolist()
@@ -43,11 +43,11 @@ if __name__ == '__main__':
         # data collaboration
         # pseudo-split of data
         Div_data = []
-        Xanc = make_anchors(X_train, args.nanc, args)
+        anc = make_anchors(X_anc, args.nanc, args, epochs=2000)
         for i in range(args.num_users):
             user_idx_i = user_list[i]
             Div_data.append(
-                {'X': X_train[user_idx_i], 'Xtest': X_test, 'Xanc': Xanc})
+                {'X': X_train[user_idx_i], 'Xtest': X_test, 'anc': anc})
         X_dc, X_test_dc = data_collaboration(Div_data, ir_method, args, args.d_ir)
 
         # =========== Build Model =============

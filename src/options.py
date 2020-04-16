@@ -14,7 +14,7 @@ def args_parser():
     parser.add_argument('--ntest', type=int, default=1000,
                         help='number of test data')
     parser.add_argument('--anc_type', type=str, default='random',
-                        choices=['random', 'gan'], help="method to create anchor data")
+                        choices=['random', 'gan', 'saved'], help="method to create anchor data")
     parser.add_argument('--nanc', type=int, default=500,
                         help="number of anchor data")
     parser.add_argument('--d_ir', type=int, default=50, help='dimension \
@@ -23,7 +23,7 @@ def args_parser():
     # data arguments
     parser.add_argument('--dataset', type=str, choices=['mnist', 'fashion_mnist', 'cifar'],
                         default='fashion_mnist', help="name of dataset")
-    parser.add_argument('--iid', type=int, default=0,
+    parser.add_argument('--iid', type=int, default=1,
                         help='Default set to IID. Set to 0 for non-IID.')
 
     # model arguments
@@ -39,12 +39,10 @@ def args_parser():
                         help='epochs of local training in federated learning')
     parser.add_argument('--batch_size', type=int, default=32,
                         help='batch size of local training in federated learning')
-    parser.add_argument('--nround', type=int, default=12,
+    parser.add_argument('--nround', type=int, default=24,
                         help='number of round for whole training of federated averaging')
     parser.add_argument('--optimizer', type=str, default='adamax',
                         choices=['sgd', 'adamax', 'adadelta', 'adam'], help='optimizer for training of neural network')
-    parser.add_argument('--verbose', type=int, default=1, help='verbose')
-    parser.add_argument('--seed', type=int, default=1, help='random seed')
 
     # other
     parser.add_argument('--save_fig', type=int, default=1,

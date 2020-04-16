@@ -39,8 +39,8 @@ if __name__ == '__main__':
 
     for r in range(args.repeat):
         print(f'Round {r+1}')
-        random.seed(args.seed)
-        X_train, label_train, X_test, label_test, user_list = get_dataset(args)
+        random.seed(r)
+        X_train, X_test, X_anc, label_train, label_test, user_list = get_dataset(args)
         assert len(label_test) == args.ntest
 
         for ii in tqdm(range(args.num_users)):
@@ -70,11 +70,11 @@ if __name__ == '__main__':
 
             # Proposed method(User 1 has test data)
             # pseudo-split of data
-            Xanc = make_anchors(X_train, args.nanc, args)
+            anc = make_anchors(X_anc, args.nanc, args)
             Div_data = []
             for i in range(ii+1):
                 user_idx_i = user_list[i] # caution: row 43
-                Div_data.append({'X':X_train[user_idx_i], 'Xtest':X_test, 'Xanc':Xanc})
+                Div_data.append({'X':X_train[user_idx_i], 'Xtest':X_test, 'anc':anc})
             X_dc, X_test_dc = data_collaboration(Div_data, ir_method, args)
             
             dc_model = GlobalModel(args, X_dc, num_class).set_model()
