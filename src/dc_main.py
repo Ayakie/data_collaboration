@@ -30,7 +30,7 @@ repeat = 3                # number of repeat to experiment(epochs)
 anc_type = 'random'  
 
 args = args_parser()
-ir_method = 'SVD'           # method to make IR
+ir_method = 'PCA'           # method to make IR
 
 if __name__ == '__main__':
     acc_cntr = np.zeros([args.repeat, args.num_users])
