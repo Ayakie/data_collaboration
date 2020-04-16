@@ -3,7 +3,7 @@ import random
 from collections import Counter
 import time
 from tqdm import tqdm
-from utils import get_dataset, exp_details
+from utils import get_dataset, fed_avg, exp_details, exp_results, get_3col_plt
 from models import GlobalModel
 from sampling import make_anchors
 from options import args_parser
@@ -68,6 +68,7 @@ if __name__ == '__main__':
             
             # federated learning
             print('----- Federated Learning -----')
+            fl_model = GlobalModel(args, X_all, num_class).set_model()
 
             for rr in range(args.nround):
                 print(f'==== Round {rr+1} / {args.nround} =====')
@@ -103,7 +104,7 @@ if __name__ == '__main__':
                 # print(f'Accuracy of FL in round {rr+1}: {fl_test_score[1]}')
 
             fed = fl_model.evaluate(X_test, label_test)
-            acc_fed[r, ii] = fed
+            acc_fed[r, ii] = fed[0]
             
     end_time = time.time()
     print('Time for computation: ', end_time - start_time)
