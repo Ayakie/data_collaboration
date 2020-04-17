@@ -1,14 +1,17 @@
-import copy
 import numpy as np
 from models import GlobalModel
 from sampling import make_anchors, sampling_iid, sampling_noniid
 from keras.datasets import mnist, cifar10, fashion_mnist
 from sklearn.preprocessing import normalize
 from sklearn.model_selection import train_test_split
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import matplotlib.pyplot as plt
 from options import args_parser
 
+import seaborn as sns
+colormap2 = sns.color_palette('RdBu')
 
 args = args_parser()
 
@@ -104,9 +107,18 @@ def exp_results(centr_score, ind_score, dc_score, fl_score, args):
     print('Test accuracy: ', ind_score[2])
 
     print('=== Data Collaboration ===')
-    print('Training loss: ', dc_score[0])
-    print('Test loss: ', dc_score[1])
-    print('Test accuracy: ', dc_score[2])
+    if len(dc_score) == 3:
+        print('Training loss: ', dc_score[0])
+        print('Test loss: ', dc_score[1])
+        print('Test accuracy: ', dc_score[2])
+
+    elif len(dc_score) == 2:
+        print(f'Training loss: {args.anc_type} - {dc_score[0][0]}, random - {dc_score[1][0]}')
+        print(f'Test loss: {args.anc_type} - {dc_score[0][1]}, random - {dc_score[1][1]}')
+        print(f'Test accuracy: {args.anc_type} - {dc_score[0][2]}, random - {dc_score[1][2]}')
+
+    else:
+        raise Exception('Unrecognized shape')       
 
     print('=== Federated Learning ===')
     print('Training loss of FL: ', fl_score[0])
@@ -150,9 +162,54 @@ def get_3col_plt(centr_score, ind_score, dc_score, fl_score, args, xlabel, x_val
     for ax in ax.flat:
         ax.set(xlabel=xlabel)
 
-    dir_path = "/Users/nedo_m02/Desktop/pytorch_practice/FL"
     if args.save_fig:
-        plt.savefig(dir_path + '/save/figures/fed_dc_%s_%sanc_%s_%sir_%susers_iid[%s]_%sround_%srun.png'
+        plt.savefig('save/figures/fed_dc_%s_%sanc_%s_%sir_%susers_iid[%s]_%sround_%srun.png'
+                    % (args.dataset, args.nanc, args.anc_type, args.d_ir, args.num_users, args.iid, args.nround, args.repeat))
+    else:
+        pass
+    plt.show()
+
+def get_3col_plt_2dc(centr_score, ind_score, dc_score, fl_score, args, xlabel, x_val):
+    '''
+    Prameters
+    ---------
+    score: list
+        score[0]: training loss
+        score[1]: test loss
+        score[2]: test accuracy
+    '''
+    fig, ax = plt.subplots(1, 3, figsize=(18, 5))
+    x_val = np.array(x_val)
+
+    ax[0].plot(x_val, centr_score[0], marker='.', label='centralized')
+    ax[0].plot(x_val, ind_score[0], linestyle='-.', marker='.', label='individual')
+    ax[0].plot(x_val, dc_score[0][0], marker='.', label=f'data collaboration({args.anc_type})', color=colormap2[-1])
+    ax[0].plot(x_val, dc_score[1][0], marker='.', label='data collaboration(random)')
+    ax[0].plot(x_val, fl_score[0], marker='.', label='federated learning')
+    ax[0].legend()
+    ax[0].set_title('Training Loss, NN')
+
+    ax[1].plot(x_val, centr_score[1], marker='.', label='centralized')
+    ax[1].plot(x_val, ind_score[1], linestyle='-.', marker='.', label='individual')
+    ax[1].plot(x_val, dc_score[0][1], marker='.', label=f'data collaboration({args.anc_type})', color=colormap2[-1])
+    ax[1].plot(x_val, dc_score[1][1], marker='.', label='data collaboration(random)')
+    ax[1].plot(x_val, fl_score[1], marker='.', label='federated learning')
+    ax[1].legend()
+    ax[1].set_title('Validation Loss, NN')
+
+    ax[2].plot(x_val, centr_score[2], marker='.', label='centralized')
+    ax[2].plot(x_val, ind_score[2], linestyle='-.', marker='.', label='individual')
+    ax[2].plot(x_val, dc_score[0][2], marker='.', label=f'data collaboration({args.anc_type})', color=colormap2[-1])
+    ax[2].plot(x_val, dc_score[1][2], marker='.', label='data collaboration(random)')
+    ax[2].plot(x_val, fl_score[2], marker='.', label='federated learning')
+    ax[2].legend()
+    ax[2].set_title('Validation Accuracy, NN')
+
+    for ax in ax.flat:
+        ax.set(xlabel=xlabel)
+
+    if args.save_fig:
+        plt.savefig('save/figures/nusers_fed_dc_%s_%sanc_%s_%sir_%susers_iid[%s]_%sround_%srun.png'
                     % (args.dataset, args.nanc, args.anc_type, args.d_ir, args.num_users, args.iid, args.nround, args.repeat))
     else:
         pass
