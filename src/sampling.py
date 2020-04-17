@@ -11,9 +11,12 @@ from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.optimizers import Adam
 
 import matplotlib.pyplot as plt
+from options import args_parser
+
+args = args_parser()
 
 # To do: add method of gan
-def make_anchors(X_train, nanc, args, hidden_dim=256, epochs=2000, latent_dim=100):
+def make_anchors(X_train, nanc=args.nanc, anc_type=args.anc_type, hidden_dim=256, epochs=2000, latent_dim=100):
     '''
     Parameters
     --------------
@@ -26,12 +29,13 @@ def make_anchors(X_train, nanc, args, hidden_dim=256, epochs=2000, latent_dim=10
         'saved': load saved weight of anchor generator previously trained by anc_type='gan'
     
     '''
-    if args.anc_type == 'random':
-        
-        anc = np.random.uniform(low=np.min(X_train), high=np.max(X_train), size=(nanc, X_train.shape[1]))
-        # anc = normalize(anc)
+    if anc_type == 'random':
     
-    elif args.anc_type == 'gan':
+        # anc = np.random.uniform(low=np.min(X_train), high=np.max(X_train), size=(nanc, X_train.shape[1]))
+        # anc = normalize(anc)
+        anc = np.random.uniform(0, 255, size=(nanc, X_train.shape[1]))
+    
+    elif anc_type == 'gan_new':
 
         gan = GAN(input_shape=X_train.shape[1], hidden_dim=hidden_dim, latent_dim=latent_dim)
         gan.train(X_train, epochs=epochs, batch_size=32)
@@ -42,7 +46,7 @@ def make_anchors(X_train, nanc, args, hidden_dim=256, epochs=2000, latent_dim=10
         # save model
         gan.generator.save_weights('save/models/generator_%sdata_%sepochs_%sanc.h5' % (len(X_train), epochs, nanc) )
     
-    elif args.anc_type == 'saved':
+    elif anc_type == 'gan':
 
         noise = np.random.normal(0, 1, size=(nanc, latent_dim))
         generator = GAN(X_train.shape[1], hidden_dim, latent_dim).generator
@@ -50,6 +54,11 @@ def make_anchors(X_train, nanc, args, hidden_dim=256, epochs=2000, latent_dim=10
         # generator.load_weights('save/models/generator_%sdata_%sepochs_%sanc.h5' % (len(X_train), epochs, nanc) )
 
         anc = generator.predict(noise)
+    
+    elif anc_type == 'raw':
+        
+        idx = np.random.choice(len(X_train), nanc)
+        anc = X_train[idx]
     
     else:
         raise Exception('Unrecognized type')
@@ -144,7 +153,7 @@ class GAN():
         model.add(Dense(np.prod(self.input_shape), activation='tanh'))
 #         model.add(Reshape(self.input_shape))
         
-        model.summary()
+        # model.summary()
         
         return model
     
@@ -161,7 +170,7 @@ class GAN():
         model.add(LeakyReLU(0.2))
         model.add(Dense(1, activation='sigmoid')) # 256 -> number of class (0 or 1)
         
-        model.summary()
+        # model.summary()
         
         return model
     

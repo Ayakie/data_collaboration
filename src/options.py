@@ -5,7 +5,7 @@ def args_parser():
     parser = argparse.ArgumentParser()
 
     # dc arguments
-    parser.add_argument('--num_users', type=int, default=10,
+    parser.add_argument('--num_users', type=int, default=5,
                         help="number of users: K")
     parser.add_argument('--repeat', type=int, default=3,
                         help='number of repeat(epoch) of dc analysis')
@@ -14,7 +14,8 @@ def args_parser():
     parser.add_argument('--ntest', type=int, default=1000,
                         help='number of test data')
     parser.add_argument('--anc_type', type=str, default='random',
-                        choices=['random', 'gan', 'saved'], help="method to create anchor data")
+                        choices=['random', 'gan_new', 'gan', 'raw'], help="method to create anchor data. \
+                            'gan_new' is to train GAN. 'gan' is to load pretrained GAN model. ")
     parser.add_argument('--nanc', type=int, default=500,
                         help="number of anchor data")
     parser.add_argument('--d_ir', type=int, default=50, help='dimension \
@@ -35,7 +36,7 @@ def args_parser():
                         help='learning rate of decision tree based classifier')
     parser.add_argument('--max_depth', type=int, default=10,
                         help='max depth of decision tree based classifier')
-    parser.add_argument('--epoch', type=int, default=3,
+    parser.add_argument('--epoch', type=int, default=1,
                         help='epochs of local training in federated learning')
     parser.add_argument('--batch_size', type=int, default=32,
                         help='batch size of local training in federated learning')
