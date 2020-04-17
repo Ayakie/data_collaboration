@@ -43,12 +43,14 @@ if __name__ == '__main__':
         # data collaboration
         # pseudo-split of data
         Div_data = []
-        anc = make_anchors(X_anc, args.nanc, args, epochs=2000)
+        anc = make_anchors(X_anc, args.nanc, args)
+        
         for i in range(args.num_users):
             user_idx_i = user_list[i]
             Div_data.append(
                 {'X': X_train[user_idx_i], 'Xtest': X_test, 'anc': anc})
-        X_dc, X_test_dc = data_collaboration(Div_data, ir_method, args, args.d_ir)
+        
+        X_dc, X_test_dc, _ = data_collaboration(Div_data, ir_method, args, args.d_ir)
 
         # =========== Build Model =============
 

@@ -75,7 +75,7 @@ if __name__ == '__main__':
             for i in range(ii+1):
                 user_idx_i = user_list[i] # caution: row 43
                 Div_data.append({'X':X_train[user_idx_i], 'Xtest':X_test, 'anc':anc})
-            X_dc, X_test_dc = data_collaboration(Div_data, ir_method, args)
+            X_dc, X_test_dc, d_cr = data_collaboration(Div_data, ir_method, args)
             
             dc_model = GlobalModel(args, X_dc, num_class).set_model()
 

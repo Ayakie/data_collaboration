@@ -11,10 +11,10 @@ from options import args_parser
 
 args = args_parser()
 
-def get_ir(X, Xtest, anc, method, args, d_ir=args.d_ir):
+def get_ir(X, Xtest, anc, method, args, d_ir):
     
     if method == 'PCA':
-        f = PCA(d_ir, svd_solver='randomized') # svd_solver='full'
+        f = PCA(d_ir) # svd_solver='full'
     
     elif method == 'ICA':
         f = FastICA(d_ir)
@@ -53,6 +53,9 @@ def get_cr(Div_tilde, d_cr):
     -----------
     Div_tilde: dict
         dict of each user's data after converting to IR
+    d_cr: int
+        usually it is eaqual to d_ir 
+        (dimension of intermediate representation)
 
     Return
     ------
@@ -64,12 +67,12 @@ def get_cr(Div_tilde, d_cr):
     anc_merged = np.hstack([i['anc_tilde'] for i in Div_tilde])
     
     # number of dimension of anchors per each user
-    anc_list_dims = [i['anc_tilde'].shape[1] for i in Div_tilde]
-    min_components = min(anc_list_dims)
+    # anc_list_dims = [i['anc_tilde'].shape[1] for i in Div_tilde]
+    # min_components = min(anc_list_dims)
     
     # check dimension
-    assert min_components >= d_cr, "n_components is too large, \
-        maximum val is %s, but got %s" % (min_components, d_cr)
+    # assert min_components >= d_cr, "n_components is too large, \
+    #     maximum val is %s, but got %s" % (min_components, d_cr)
     
     U, s, V = scipy.linalg.svd(anc_merged, lapack_driver='gesvd')
     Z = U[:, :d_cr].T
@@ -89,7 +92,7 @@ def get_cr(Div_tilde, d_cr):
     return X_hat_list, Xtest_hat
 
 # To do: enable to select different method per user
-def data_collaboration(Div_data, method, args, d_cr=args.d_ir):
+def data_collaboration(Div_data, method, args, d_ir=args.d_ir):
     '''compute whole process of DC
     
     Parameters
@@ -109,11 +112,14 @@ def data_collaboration(Div_data, method, args, d_cr=args.d_ir):
 
     Div_tilde = []
     for i, user in enumerate(Div_data):
-        X_tilde, Xtest_tilde, anc_tilde = get_ir(user['X'], user['Xtest'], user['anc'], method, args, args.d_ir)
+        X_tilde, Xtest_tilde, anc_tilde = get_ir(user['X'], user['Xtest'], user['anc'], method, args, d_ir)
         Div_tilde.append({'X_tilde': X_tilde, 'Xtest_tilde': Xtest_tilde, 'anc_tilde': anc_tilde})
     
-    X_hat_list, Xtest_hat = get_cr(Div_tilde, d_cr)
+    anc_list_dims = [i['anc_tilde'].shape[1] for i in Div_tilde]
+    d_cr = min(anc_list_dims)
+
+    X_hat_list, Xtest_hat = get_cr(Div_tilde, d_cr=d_cr)
     X_hat_all = np.vstack(X_hat_list)
             
-    return X_hat_all, Xtest_hat
+    return X_hat_all, Xtest_hat, d_cr
         
