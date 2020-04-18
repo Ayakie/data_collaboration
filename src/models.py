@@ -2,10 +2,12 @@ import numpy as np
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Reshape
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
+from keras.layers import Conv2D, Conv1D, MaxPooling2D, MaxPooling1D, BatchNormalization
 from keras.optimizers import SGD, Adadelta, Adam, Adamax
+from keras.models import model_from_config
 from keras.metrics import sparse_categorical_accuracy
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn import svm
 from sklearn.ensemble import GradientBoostingClassifier
 
 
@@ -27,10 +29,15 @@ class GlobalModel(object):
                 model = self.cnn_fashion_mnist()
             elif self.args.dataset == 'cifar':
                 model = self.cnn_cifar()
+        elif self.args.model == 'cnn1d':
+            if self.args.dataset == 'mnist':
+                model = self.cnn1d_mnist()
         elif self.args.model == 'mlp':
             model = self.mlp()
         elif self.args.model == 'knn':
             model = self.knn_cls()
+        elif self.args.model == 'svm':
+            model = self.svm_cls()
         else:
             raise Exception('Passed args')
         
@@ -72,6 +79,25 @@ class GlobalModel(object):
 
         return model
 
+    def cnn1d_mnist(self):
+
+        model = Sequential()
+        model.add(Reshape((self.input_shape[0], 1), input_shape=self.input_shape))
+        model.add(Conv1D(10, kernel_size=5, activation='relu')) 
+        model.add(MaxPooling1D(pool_size=2))  
+        model.add(Conv1D(20, kernel_size=5, activation='relu'))
+        model.add(Dropout(0.25))
+        model.add(MaxPooling1D(pool_size=2))  
+        model.add(Flatten()) 
+        model.add(Dense(50, activation='relu'))
+        model.add(Dropout(0.25))
+        model.add(Dense(self.num_class, activation='softmax'))
+
+        model.compile(loss='sparse_categorical_crossentropy',
+                      optimizer=self.optimizer, metrics=[sparse_categorical_accuracy])
+
+        return model
+
     def cnn_fashion_mnist(self):
 
         model = Sequential()
@@ -94,7 +120,6 @@ class GlobalModel(object):
     def cnn_cifar(self):
 
         model = Sequential()
-        model.add(Reshape((32, 32, 3), input_shape=self.input_shape))
         model.add(Conv2D(32, kernel_size=(5, 5), padding='same',
                          activation='relu', input_shape=self.input_shape))  # 32x32x32
         model.add(MaxPooling2D((2, 2)))  # 32x16x16
@@ -118,4 +143,8 @@ class GlobalModel(object):
         model = KNeighborsClassifier(n_neighbors=self.args.n_neighbors)
 
         return model
-    
+
+    def svm_cls(self):
+        model = svm.SVC(C=10,kernel='rbf',gamma=0.01)
+
+        return model

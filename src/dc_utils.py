@@ -14,7 +14,7 @@ args = args_parser()
 def get_ir(X, Xtest, anc, method, args, d_ir):
     
     if method == 'PCA':
-        f = PCA(d_ir) # svd_solver='full'
+        f = PCA(d_ir, svd_solver='arpack')
     
     elif method == 'ICA':
         f = FastICA(d_ir)
@@ -26,15 +26,17 @@ def get_ir(X, Xtest, anc, method, args, d_ir):
         f = LocallyLinearEmbedding(n_components=d_ir, n_neighbors=args.n_neighbors)
 
     elif method == 'SVD':
-        # Either "arpack" for the ARPACK wrapper in SciPy
-        # (scipy.sparse.linalg.svds), or "randomized" for the randomized
+        # Either "arpack" for the ARPACK wrapper in SciPy(scipy.sparse.linalg.svds), or "randomized" for the randomized
         # algorithm due to Halko (2009).
-        f = TruncatedSVD(d_ir, algorithm='arpack')
-#         U1,s1,V1_T = sc.linalg.svd(X, lapack_driver='gesvd')
-#         f = V1_T[:d,:]
-#         X_tilde = np.dot(X, f.T)
-#         anc_tilde = np.dot(l, f.T)
-#         Xtest_tilde = np.dot(X_test, f.T)
+        # f = TruncatedSVD(d_ir, algorithm='arpack')
+        U1,s1,V1_T = scipy.linalg.svd(X, lapack_driver='gesvd')
+        f = V1_T[:d_ir,:]
+        X_tilde = np.dot(X, f.T)
+        anc_tilde = np.dot(anc, f.T)
+        Xtest_tilde = np.dot(Xtest, f.T)
+
+        return X_tilde, Xtest_tilde, anc_tilde
+        
     else:
         raise Exception('No method')
     
@@ -56,7 +58,6 @@ def get_cr(Div_tilde, d_cr):
     d_cr: int
         usually it is eaqual to d_ir 
         (dimension of intermediate representation)
-
     Return
     ------
     X_hat_list: list of each user's CR
@@ -122,4 +123,3 @@ def data_collaboration(Div_data, method, args, d_ir=args.d_ir):
     X_hat_all = np.vstack(X_hat_list)
             
     return X_hat_all, Xtest_hat, d_cr
-        

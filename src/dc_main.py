@@ -8,6 +8,7 @@ from models import GlobalModel
 from sampling import make_anchors
 from options import args_parser
 from dc_utils import data_collaboration
+import datetime
 
 # graph
 import matplotlib
@@ -24,11 +25,12 @@ ndat = 100                # size of data portions
 nanc = 500                # number of anchor data
 n_neighbors = 6           # for LLE, LPP, KNN
 d_ir = 50                 # dimension of intermediate representation(half of ndat)
-repeat = 3                # number of repeat to experiment(≒epochs)
-anc_type = 'random'  
+repeat = 3                # number of repeat to experiment(epochs)
 '''
+anc_type = 'random'  
+
 args = args_parser()
-ir_method = 'PCA'           # method to make IR
+ir_method = 'PCA'         # method to make IR
 
 if __name__ == '__main__':
     acc_cntr = np.zeros([args.repeat, args.num_users])
@@ -44,7 +46,7 @@ if __name__ == '__main__':
         assert len(label_test) == args.ntest
 
         for ii in tqdm(range(args.num_users)):
-            print(f'User {ii+1}: {Counter(label_train[user_list[ii]])}') 
+            print(f"User {ii+1}: {Counter(label_train[user_list[ii]])}") 
 
             # Main
             # train classifier on all data
@@ -55,7 +57,7 @@ if __name__ == '__main__':
 
             centr_model = GlobalModel(args, X_all, num_class).set_model()
             
-            if args.model == 'knn':
+            if args.model == 'knn' or args.model =='svm':
                 centr_model.fit(X_all, label_all)
                 centr = centr_model.score(X_test, label_test)
             else: # keras model
@@ -79,7 +81,7 @@ if __name__ == '__main__':
             
             dc_model = GlobalModel(args, X_dc, num_class).set_model()
 
-            if args.model == 'knn':
+            if args.model == 'knn' or args.model =='svm':
                 dc_model.fit(X_dc, label_all)
                 dc = dc_model.score(X_test_dc, label_test)
             else:
@@ -98,7 +100,7 @@ if __name__ == '__main__':
     print('Individual average accuracy:', ind)
     print('Collaboration average accuracy:', dc)
 
-    dir_path = "/Users/nedo_m02/Desktop/pytorch_practice/FL"
+    dir_path = "./"
     xval = np.arange(1, args.num_users+1)
 
     plt.figure(figsize=(13,5))
@@ -115,3 +117,14 @@ if __name__ == '__main__':
     else:
         pass
     plt.show()
+
+
+    try:
+        with open(dir_path + '/save/logs/dc_%s_%s_%sndat_%s_dim.txt'%(args.dataset, args.model, args.ndat, args.d_ir), 'w') as log:
+            print(args, file=log)
+            print(centr, file=log)
+            print(ind, file=log)
+            print(dc, file=log)
+                
+    except IOError:
+        print('File Error')

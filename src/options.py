@@ -7,7 +7,7 @@ def args_parser():
     # dc arguments
     parser.add_argument('--num_users', type=int, default=5,
                         help="number of users: K")
-    parser.add_argument('--repeat', type=int, default=3,
+    parser.add_argument('--repeat', type=int, default=5,
                         help='number of repeat(epoch) of dc analysis')
     parser.add_argument('--ndat', type=int, default=100,
                         help="number of data per users: N")
@@ -29,9 +29,9 @@ def args_parser():
 
     # model arguments
     parser.add_argument('--model', type=str, default='mlp',
-                        choices=['mlp', 'cnn', 'knn'])
+                        choices=['mlp', 'cnn', 'cnn1d', 'knn', 'svm'])
     parser.add_argument('--n_neighbors', type=int, default=6,
-                        help='for LLE, LPP, KNN claffifier')
+                        help='for LLE, LPP, KNN classifier')
     parser.add_argument('--lr', type=int, default=0.05,
                         help='learning rate of decision tree based classifier')
     parser.add_argument('--max_depth', type=int, default=10,

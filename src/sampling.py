@@ -15,7 +15,6 @@ from options import args_parser
 
 args = args_parser()
 
-# To do: add method of gan
 def make_anchors(X_train, nanc=args.nanc, anc_type=args.anc_type, hidden_dim=256, epochs=2000, latent_dim=100):
     '''
     Parameters
@@ -24,9 +23,10 @@ def make_anchors(X_train, nanc=args.nanc, anc_type=args.anc_type, hidden_dim=256
         number of anchor data
     X_train: 
         training data to generate anchor data
-    anc_type: 'random', 'gan', 'saved'
-        'gan': train GAN from X_train to generate anchor data
-        'saved': load saved weight of anchor generator previously trained by anc_type='gan'
+    anc_type: 'random', 'gan', 'saved', 'raw'
+        'gan_new': generate anchor data by GAN from X_train to generate anchor data
+        'gan': load saved weight of anchor generator previously trained by anc_type='gan_new'
+        'raw': sample from original data(X_train) as anchors
     
     '''
     if anc_type == 'random':
@@ -57,7 +57,7 @@ def make_anchors(X_train, nanc=args.nanc, anc_type=args.anc_type, hidden_dim=256
     
     elif anc_type == 'raw':
         
-        idx = np.random.choice(len(X_train), nanc)
+        idx = np.random.choice(len(X_train), nanc, replace=False)
         anc = X_train[idx]
     
     else:
@@ -67,7 +67,6 @@ def make_anchors(X_train, nanc=args.nanc, anc_type=args.anc_type, hidden_dim=256
 
 def sampling_iid(X_train, num_users, ndat):
     '''Sample I.I.D user data from dataset
-
     Return
     --------
     list of user index(key) and ndat samples index(value) 
@@ -87,7 +86,6 @@ def sampling_noniid(X_train, label_train,  num_users, ndat, nlabel):
     ----------
     nlabel: int(1~9)
         number of different types of labels which each user has
-
     Return
     -------
     list of ndat samples index of each user
@@ -246,4 +244,3 @@ class GAN():
         
         fig.savefig('save/figures/%sdata_%sepoch.png' % (len(X_train), epoch))
         plt.close()
-        
