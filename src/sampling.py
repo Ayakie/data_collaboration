@@ -5,6 +5,8 @@ from sklearn.preprocessing import normalize
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+from sklearn.decomposition import PCA
+
 from tensorflow.keras import layers
 from tensorflow.keras.layers import Dense, Activation, Reshape, Input, BatchNormalization, LeakyReLU
 from tensorflow.keras.models import Sequential, Model
@@ -15,7 +17,7 @@ from options import args_parser
 
 args = args_parser()
 
-def make_anchors(X_train, nanc=args.nanc, anc_type=args.anc_type, hidden_dim=256, epochs=2000, latent_dim=100):
+def make_anchors(X_train, nanc=args.nanc, anc_type=args.anc_type, hidden_dim=256, epochs=2000, latent_dim=100, n_aug=10):
     '''
     Parameters
     --------------
@@ -23,17 +25,16 @@ def make_anchors(X_train, nanc=args.nanc, anc_type=args.anc_type, hidden_dim=256
         number of anchor data
     X_train: 
         training data to generate anchor data
-    anc_type: 'random', 'gan', 'saved', 'raw'
+    anc_type: 'random', 'gan', 'saved', 'raw', 'augmented'(for image data)
         'gan_new': generate anchor data by GAN from X_train to generate anchor data
         'gan': load saved weight of anchor generator previously trained by anc_type='gan_new'
         'raw': sample from original data(X_train) as anchors
+        'augmented': recover image after dimensionally reduced
     
     '''
     if anc_type == 'random':
     
-        # anc = np.random.uniform(low=np.min(X_train), high=np.max(X_train), size=(nanc, X_train.shape[1]))
-        # anc = normalize(anc)
-        anc = np.random.uniform(0, 255, size=(nanc, X_train.shape[1]))
+        anc = np.random.uniform(low=np.min(X_train), high=np.max(X_train), size=(nanc, X_train.shape[1]))
     
     elif anc_type == 'gan_new':
 
@@ -59,6 +60,20 @@ def make_anchors(X_train, nanc=args.nanc, anc_type=args.anc_type, hidden_dim=256
         
         idx = np.random.choice(len(X_train), nanc, replace=False)
         anc = X_train[idx]
+
+    elif anc_type == 'augmented':
+        
+        # reduce dimension of image
+        pca = PCA(n_aug)
+        mu = np.mean(X_train, axis=0)
+        std = np.std(X_train, axis=0)
+
+        # recover image
+        anc = np.dot(pca.fit_transform(X_train), pca.components_[:n_aug, :])
+        anc = anc * std + mu 
+
+        idx = np.random.choice(len(X_train), nanc, replace=False)
+        anc = anc[idx]
     
     else:
         raise Exception('Unrecognized type')
