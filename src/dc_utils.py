@@ -11,21 +11,21 @@ from options import args_parser
 
 args = args_parser()
 
-def get_ir(X, Xtest, anc, method, args, d_ir):
+def get_ir(X, Xtest, anc, args, d_ir):
     
-    if method == 'PCA':
+    if args.ir_method == 'PCA':
         f = PCA(d_ir, svd_solver='arpack')
     
-    elif method == 'ICA':
+    elif args.ir_method == 'ICA':
         f = FastICA(d_ir)
         
-    elif method == 'LPP':
+    elif args.ir_method == 'LPP':
         f = LPP(n_components=d_ir, n_neighbors=args.n_neighbors)
     
-    elif method == 'LLE':
+    elif args.ir_method == 'LLE':
         f = LocallyLinearEmbedding(n_components=d_ir, n_neighbors=args.n_neighbors)
 
-    elif method == 'SVD':
+    elif args.ir_method == 'SVD':
         # Either "arpack" for the ARPACK wrapper in SciPy(scipy.sparse.linalg.svds), or "randomized" for the randomized
         # algorithm due to Halko (2009).
         # f = TruncatedSVD(d_ir, algorithm='arpack')
@@ -93,7 +93,7 @@ def get_cr(Div_tilde, d_cr):
     return X_hat_list, Xtest_hat
 
 # To do: enable to select different method per user
-def data_collaboration(Div_data, method, args, d_ir=args.d_ir):
+def data_collaboration(Div_data, args, d_ir=args.d_ir):
     '''compute whole process of DC
     
     Parameters
@@ -101,8 +101,6 @@ def data_collaboration(Div_data, method, args, d_ir=args.d_ir):
     Div_data: list
         each element has a dict whose keys are 
         "X", "Xtest", "anc"
-    method: str
-        method of dimensionally reduction(PCA, LLE, LPP, SVD)
     d: dimension of intermediate representation
     d_cr: usually it is equal to d_ir
         dimention of left singular vector U
@@ -113,7 +111,7 @@ def data_collaboration(Div_data, method, args, d_ir=args.d_ir):
 
     Div_tilde = []
     for i, user in enumerate(Div_data):
-        X_tilde, Xtest_tilde, anc_tilde = get_ir(user['X'], user['Xtest'], user['anc'], method, args, d_ir)
+        X_tilde, Xtest_tilde, anc_tilde = get_ir(user['X'], user['Xtest'], user['anc'], args, d_ir)
         Div_tilde.append({'X_tilde': X_tilde, 'Xtest_tilde': Xtest_tilde, 'anc_tilde': anc_tilde})
     
     anc_list_dims = [i['anc_tilde'].shape[1] for i in Div_tilde]

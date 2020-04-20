@@ -37,6 +37,21 @@ import sys, os
 sys.path.append('..')
 from packages.lpproj_LPP import LocalityPreservingProjection as LPP
 
+def sampling_iid(X_train, num_users, ndat):
+    '''Sample I.I.D user data from dataset
+    Return
+    --------
+    list of user index(key) and ndat samples index(value) 
+    '''
+
+    list_users, all_idx = [], [i for i in range(len(X_train))]
+    for i in range(num_users):
+        user_idx = set(np.random.choice(all_idx, size=ndat, replace=False))
+        all_idx = list(set(all_idx) - user_idx) # remained index
+        list_users.append(list(user_idx))
+    
+    return list_users
+
 # Simple KNN Classifier
 def knn_cls(Xtrain, Xtest, ytrain, ytest): 
     model = KNeighborsClassifier(n_neighbors=1)
@@ -95,9 +110,53 @@ def get_embedding(X, anc, Xtest, d, method='SVD'):
     
     return Y, Yanc, Ytest
 
-def make_anchors(Xtrain, nanc):
+def make_anchors(X_train, nanc, anc_type, hidden_dim=128, epochs=300, latent_dim=100):
+    '''
+    Parameters
+    --------------
+    nanc: int
+        number of anchor data
+    X_train: 
+        training data to generate anchor data
+    anc_type: 'random', 'gan', 'saved', 'raw'
+        'gan_new': generate anchor data by GAN from X_train to generate anchor data
+        'gan': load saved weight of anchor generator previously trained by anc_type='gan_new'
+        'raw': sample from original data(X_train) as anchors
     
-    anc = np.random.uniform(low=np.min(Xtrain), high=np.max(Xtrain), size=(nanc, Xtrain.shape[1]))
+    '''
+    if anc_type == 'random':
+    
+        anc = np.random.uniform(low=np.min(X_train), high=np.max(X_train), size=(nanc, X_train.shape[1]))
+        # anc = normalize(anc)
+        # anc = np.random.uniform(0, 255, size=(nanc, X_train.shape[1]))
+    
+    elif anc_type == 'gan_new':
+
+        gan = GAN(input_shape=X_train.shape[1], hidden_dim=hidden_dim, latent_dim=latent_dim)
+        gan.train(X_train, epochs=epochs, batch_size=32)
+        
+        noise = np.random.normal(0, 1, size=(nanc, latent_dim))
+        anc = gan.generator.predict(noise)
+
+        # save model
+        gan.generator.save_weights('save/models/generator_%sdata_%sepochs_%sanc.h5' % (len(X_train), epochs, nanc) )
+    
+    elif anc_type == 'gan':
+
+        noise = np.random.normal(0, 1, size=(nanc, latent_dim))
+        generator = GAN(X_train.shape[1], hidden_dim, latent_dim).generator
+        generator.load_weights('save/models/generator_1200data_2000epochs_500anc.h5')
+        # generator.load_weights('save/models/generator_%sdata_%sepochs_%sanc.h5' % (len(X_train), epochs, nanc) )
+
+        anc = generator.predict(noise)
+    
+    elif anc_type == 'raw':
+        
+        idx = np.random.choice(len(X_train), nanc, replace=False)
+        anc = X_train[idx]
+    
+    else:
+        raise Exception('Unrecognized type')
     
     return anc
 
@@ -285,3 +344,22 @@ class GAN():
         
         fig.savefig('save/figures/%sdata_%sepoch.png' % (len(X_train), epoch))
         plt.close()
+
+def fed_avg(user_weight_list, user_ndat_list):
+    '''conpute FedAvg: weighted avarage of parameters.
+    if the size of data is equal among users, fedavg will be the normal avarage
+
+    Return
+    ----------
+    new_weights: list
+        list of new weights per each user
+    
+    '''
+    new_weight = [np.zeros(w.shape) for w in user_weight_list[0]] # get shape of params
+    total_size = np.sum(user_ndat_list)
+
+    for w in range(len(new_weight)):
+        for i in range(len(user_weight_list)): # num_user
+            new_weight[w] += user_weight_list[i][w] * user_ndat_list[i] / total_size
+
+    return new_weight
