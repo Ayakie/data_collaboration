@@ -5,6 +5,7 @@ from keras.datasets import mnist, cifar10, fashion_mnist
 from sklearn.preprocessing import normalize
 from sklearn.model_selection import train_test_split
 import sys, os
+import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import matplotlib.pyplot as plt
@@ -94,123 +95,69 @@ def exp_details(args):
     print(f'    Dimension of intermediate representation : {args.d_ir}\n')
     return
 
-def exp_results(centr_score, ind_score, dc_score, fl_score, args):
-    print(f'Averaged over {args.repeat} runs')
-    print('=== Centralized Model ===')
-    print('Training loss: ', centr_score[0])
-    print('Test loss: ', centr_score[1])
-    print('Test accuracy: ', centr_score[2])
 
-    print('=== Individual Model ===')
-    print('Training loss: ', ind_score[0])
-    print('Test loss: ', ind_score[1])
-    print('Test accuracy: ', ind_score[2])
-
-    print('=== Data Collaboration ===')
-    if len(dc_score) == 3:
-        print('Training loss: ', dc_score[0])
-        print('Test loss: ', dc_score[1])
-        print('Test accuracy: ', dc_score[2])
-
-    elif len(dc_score) == 2:
-        print(f'Training loss: {args.anc_type} - {dc_score[0][0]}, random - {dc_score[1][0]}')
-        print(f'Test loss: {args.anc_type} - {dc_score[0][1]}, random - {dc_score[1][1]}')
-        print(f'Test accuracy: {args.anc_type} - {dc_score[0][2]}, random - {dc_score[1][2]}')
-
-    else:
-        raise Exception('Unrecognized shape')       
-
-    print('=== Federated Learning ===')
-    print('Training loss of FL: ', fl_score[0])
-    print('Test loss of FL: ', fl_score[1])
-    print('Test accuracy of FL: ', fl_score[2])
-    return
-
-def get_3col_plt(centr_score, ind_score, dc_score, fl_score, args, xlabel, x_val):
+def get_result(xval, acc_cntr, acc_ind, acc_method, time, args, setting='users', method='dc'):
+    
     '''
-    Prameters
+    Parameters
     ---------
-    score: list
-        score[0]: training loss
-        score[1]: test loss
-        score[2]: test accuracy
+    setting: 'users' or 'ndat'
+        record the parameter setting. select 'users' for dc_main.py and fed_main.py
+        selct 'ndat' for dc_ndat.py and fed_ndat.py
+
+    method: 'dc' or 'fed'
+        select 'dc' for the data collabortaion experiment else 'fed'.
+
+    Returns
+    --------
+    file name: (day)_(hour)_(minutes)_(method)_(data)_(model)_(acn_type)_(repeat)_(setting)
+    ex) 0420_18_11_dc_mnist_mlp_random_10run_users.txt
     '''
-    fig, ax = plt.subplots(1, 3, figsize=(18, 5))
-    x_val = np.array(x_val)
 
-    ax[0].plot(x_val, centr_score[0], marker='.', label='centralized')
-    ax[0].plot(x_val, ind_score[0], linestyle='-.', marker='.', label='individual')
-    ax[0].plot(x_val, dc_score[0], marker='.', label='data collaboration')
-    ax[0].plot(x_val, fl_score[0], marker='.', label='federated learning')
-    ax[0].legend()
-    ax[0].set_title('Training Loss, NN')
+    centr = np.round(np.mean(acc_cntr, 0), decimals=3)
+    ind = np.round(np.mean(acc_ind, 0), decimals=3)
+    other = np.round(np.mean(acc_method, 0), decimals=3)
+    time_mean = np.round(np.mean(time, 0), decimals=3)
 
-    ax[1].plot(x_val, centr_score[1], marker='.', label='centralized')
-    ax[1].plot(x_val, ind_score[1], linestyle='-.', marker='.', label='individual')
-    ax[1].plot(x_val, dc_score[1], marker='.', label='data collaboration')
-    ax[1].plot(x_val, fl_score[1], marker='.', label='federated learning')
-    ax[1].legend()
-    ax[1].set_title('Validation Loss, NN')
+    print('Averaged over {} runs'.format(args.repeat))
+    print('Centralized average accuracy:', centr)
+    print('Individual average accuracy:', ind)
+    print(['Collaboration average accuracy:' if method=='dc' else 'Federated Learning'][0], other)
 
-    ax[2].plot(x_val, centr_score[2], marker='.', label='centralized')
-    ax[2].plot(x_val, ind_score[2], linestyle='-.', marker='.', label='individual')
-    ax[2].plot(x_val, dc_score[2], marker='.', label='data collaboration')
-    ax[2].plot(x_val, fl_score[2], marker='.', label='federated learning')
-    ax[2].legend()
-    ax[2].set_title('Validation Accuracy, NN')
+    plt.figure(figsize=(13, 5))
+    plt.plot(xval, centr, label='Centralized', marker=".")
+    plt.plot(xval, ind, label='Indivisual (User1)', marker=".")
+    plt.plot(xval, other, label=['Data Collaboration' if method=='dc' else 'Federated Learning'][0], marker=".")
+    plt.xlabel(['Number of users' if setting=='users' else 'Number of data per user'][0])
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy of {} ({})'.format(
+        args.dataset.upper(), ['IID' if args.iid else 'Non-IID'][0]))
+    plt.ylim(min(other)-0.1, max(centr)+0.05)
+    plt.legend()
 
-    for ax in ax.flat:
-        ax.set(xlabel=xlabel)
+    now = datetime.datetime.now()
+    save_time = now.strftime("%m%d_%H_%M")
 
     if args.save_fig:
-        plt.savefig('save/figures/fed_dc_%s_%sanc_%s_%sir_%susers_iid[%s]_%sround_%srun.png'
-                    % (args.dataset, args.nanc, args.anc_type, args.d_ir, args.num_users, args.iid, args.nround, args.repeat))
+        plt.savefig('./save/figures/%s_%s_%s_%susers_%s_%s_%srun_%s.png' % (
+            save_time, method, args.dataset, args.num_users, args.model, args.anc_type, args.repeat, setting))
+        
+        # save data as numpy
+        np.savez('./save/logs/%s_%s_%s_%susers_%s_%s_%srun_%s' % (
+            save_time, method, args.dataset, args.num_users, args.model, args.anc_type, args.repeat, setting), 
+            cntr=acc_cntr, ind=acc_ind, other=acc_method, time=time)
     else:
         pass
     plt.show()
 
-def get_3col_plt_2dc(centr_score, ind_score, dc_score, fl_score, args, xlabel, x_val):
-    '''
-    Prameters
-    ---------
-    score: list
-        score[0]: training loss
-        score[1]: test loss
-        score[2]: test accuracy
-    '''
-    fig, ax = plt.subplots(1, 3, figsize=(18, 5))
-    x_val = np.array(x_val)
+    try:
+        with open('./save/logs/%s_%s_%s_%susers_%s_%s_%srun_%s.txt' % (
+            save_time, method, args.dataset, args.num_users, args.model, args.anc_type, args.repeat, setting), 'w') as log:
+            print(args, file=log)
+            print(centr, file=log)
+            print(ind, file=log)
+            print(other, file=log)
+            print(time_mean, file=log)
 
-    ax[0].plot(x_val, centr_score[0], marker='.', label='centralized')
-    ax[0].plot(x_val, ind_score[0], linestyle='-.', marker='.', label='individual')
-    ax[0].plot(x_val, dc_score[0][0], marker='.', label=f'data collaboration({args.anc_type})', color=colormap2[-1])
-    ax[0].plot(x_val, dc_score[1][0], marker='.', label='data collaboration(random)')
-    ax[0].plot(x_val, fl_score[0], marker='.', label='federated learning')
-    ax[0].legend()
-    ax[0].set_title('Training Loss, NN')
-
-    ax[1].plot(x_val, centr_score[1], marker='.', label='centralized')
-    ax[1].plot(x_val, ind_score[1], linestyle='-.', marker='.', label='individual')
-    ax[1].plot(x_val, dc_score[0][1], marker='.', label=f'data collaboration({args.anc_type})', color=colormap2[-1])
-    ax[1].plot(x_val, dc_score[1][1], marker='.', label='data collaboration(random)')
-    ax[1].plot(x_val, fl_score[1], marker='.', label='federated learning')
-    ax[1].legend()
-    ax[1].set_title('Validation Loss, NN')
-
-    ax[2].plot(x_val, centr_score[2], marker='.', label='centralized')
-    ax[2].plot(x_val, ind_score[2], linestyle='-.', marker='.', label='individual')
-    ax[2].plot(x_val, dc_score[0][2], marker='.', label=f'data collaboration({args.anc_type})', color=colormap2[-1])
-    ax[2].plot(x_val, dc_score[1][2], marker='.', label='data collaboration(random)')
-    ax[2].plot(x_val, fl_score[2], marker='.', label='federated learning')
-    ax[2].legend()
-    ax[2].set_title('Validation Accuracy, NN')
-
-    for ax in ax.flat:
-        ax.set(xlabel=xlabel)
-
-    if args.save_fig:
-        plt.savefig('save/figures/nusers_fed_dc_%s_%sanc_%s_%sir_%susers_iid[%s]_%sround_%srun.png'
-                    % (args.dataset, args.nanc, args.anc_type, args.d_ir, args.num_users, args.iid, args.nround, args.repeat))
-    else:
-        pass
-    plt.show()
+    except IOError:
+        print('File Error')
