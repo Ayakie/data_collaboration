@@ -94,5 +94,5 @@ if __name__ == '__main__':
 
 
     xval = np.arange(1, args.num_users+1)
-    get_result(xval, acc_cntr, acc_ind, acc_dc, time_dc, args, method='dc', setting='ndat')
+    get_result(xval, acc_cntr, acc_ind, acc_dc, time_dc, args, method='dc', setting='users')
     
