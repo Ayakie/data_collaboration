@@ -46,6 +46,6 @@ def args_parser():
     # other
     parser.add_argument('--save_fig', type=int, default=1,
                         help='Default set to save plot. Set 0 not to save a figure.')
-
+    parser.add_argument('--save_log', type=int, default=1, help='Default set to save ')
     args = parser.parse_args()
     return args
