@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from models import GlobalModel
 from sampling import make_anchors, sampling_iid, sampling_noniid
 from keras.datasets import mnist, cifar10, fashion_mnist
@@ -7,6 +8,7 @@ from sklearn.model_selection import train_test_split
 import sys, os
 import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import csv
 
 import matplotlib.pyplot as plt
 from options import args_parser
@@ -114,50 +116,51 @@ def get_result(xval, acc_cntr, acc_ind, acc_method, time, args, setting='users',
     ex) 0420_18_11_dc_mnist_mlp_random_10run_users.txt
     '''
 
-    centr = np.round(np.mean(acc_cntr, 0), decimals=3)
-    ind = np.round(np.mean(acc_ind, 0), decimals=3)
-    other = np.round(np.mean(acc_method, 0), decimals=3)
-    time_mean = np.round(np.mean(time, 0), decimals=3)
+    centr_m = np.round(np.mean(acc_cntr, 0), decimals=3)
+    centr_s = np.round(np.std(acc_cntr, 0), decimals=3)
+    ind_m = np.round(np.mean(acc_ind, 0), decimals=3)
+    ind_s = np.round(np.std(acc_ind, 0), decimals=3)
+    other_m = np.round(np.mean(acc_method, 0), decimals=3)
+    other_s = np.round(np.std(acc_method, 0), decimals=3)
+    time_m = np.round(np.mean(time, 0), decimals=3)
+    time_s = np.round(np.std(time, 0), decimals=3)
 
     print('Averaged over {} runs'.format(args.repeat))
-    print('Centralized average accuracy:', centr)
-    print('Individual average accuracy:', ind)
-    print(['Collaboration average accuracy:' if method=='dc' else 'Federated Learning'][0], other)
+    print('Centralized average accuracy:', centr_m)
+    print('Individual average accuracy:', ind_m)
+    print(['Collaboration average accuracy:' if method=='dc' else 'Federated Learning'][0], other_m)
 
     plt.figure(figsize=(13, 5))
-    plt.plot(xval, centr, label='Centralized', marker=".")
-    plt.plot(xval, ind, label='Indivisual (User1)', marker=".")
-    plt.plot(xval, other, label=['Data Collaboration' if method=='dc' else 'Federated Learning'][0], marker=".")
+    plt.plot(xval, centr_m, label='Centralized', marker=".")
+    plt.plot(xval, ind_m, label='Indivisual (User1)', marker=".")
+    plt.plot(xval, other_m, label=['Data Collaboration' if method=='dc' else 'Federated Learning'][0], marker=".")
     plt.xlabel(['Number of users' if setting=='users' else 'Number of data per user'][0])
     plt.ylabel('Accuracy')
     plt.title('Accuracy of {} ({})'.format(
         args.dataset.upper(), ['IID' if args.iid else 'Non-IID'][0]))
-    plt.ylim(min(other)-0.1, max(centr)+0.05)
+    # plt.ylim(min(other)-0.1, max(centr)+0.05)
     plt.legend()
 
     now = datetime.datetime.now()
     save_time = now.strftime("%m%d_%H_%M")
 
     if args.save_fig:
-        plt.savefig('./save/figures/%s_%s_%s_%susers_%s_%s_%srun_%s.png' % (
-            save_time, method, args.dataset, args.num_users, args.model, args.anc_type, args.repeat, setting))
+        plt.savefig('./save/figures/%s_%s_%s_%susers_%s_%s_%sE_%srun_%s.png' % (
+            save_time, method, args.dataset, args.num_users, args.model, args.anc_type, args.epoch, args.repeat, setting))
         
-        # save data as numpy
-        np.savez('./save/logs/%s_%s_%s_%susers_%s_%s_%srun_%s' % (
-            save_time, method, args.dataset, args.num_users, args.model, args.anc_type, args.repeat, setting), 
-            cntr=acc_cntr, ind=acc_ind, other=acc_method, time=time)
     else:
         pass
     plt.show()
 
-    try:
-        with open('./save/logs/%s_%s_%s_%susers_%s_%s_%srun_%s.txt' % (
-            save_time, method, args.dataset, args.num_users, args.model, args.anc_type, args.repeat, setting), 'w') as log:
-            print(args, file=log)
-            print(centr, file=log)
-            print(ind, file=log)
-            print(other, file=log)
-            print(time_mean, file=log)
-
-    except IOError:
-        print('File Error')
+    if args.save_log:
+        # save as csv
+        df = pd.DataFrame(columns=xval)
+        df = df.append(pd.Series(args, name='args'))
+        df = df.append(pd.Series(centr_m, name='centr_m', index=xval))
+        df = df.append(pd.Series(centr_s, name='centr_s', index=xval))
+        df = df.append(pd.Series(ind_m, name='ind_m', index=xval))
+        df = df.append(pd.Series(ind_s, name='ind_s', index=xval))
+        df = df.append(pd.Series(other_m, name=method+'_m', index=xval))
+        df = df.append(pd.Series(other_s, name=method+'_s', index=xval))
+        df.to_csv('./save/logs/%s_%s_%s_%susers_%s_%s_%sE_%srun_%s.csv' % (
+            save_time, method, args.dataset, args.num_users, args.model, args.anc_type,  args.epoch, args.repeat, setting))
