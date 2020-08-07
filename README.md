@@ -46,7 +46,7 @@ default parameters
 Create environment
 ```
 $ git clone https://github.com/Ayakie/data_collaboration
-$ docker-compose up
+$ docker-compose up --build
 ```
 
 Run default condition
