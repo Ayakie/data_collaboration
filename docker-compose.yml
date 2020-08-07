@@ -1,0 +1,12 @@
+version: "3"
+services:
+  app:
+    container_name: "data-collaboration"
+    build: .
+    image: aya1023lake/data-collaboration
+    user: root
+    volumes:
+      - ./:/workspace
+    ports:
+      - 8888:8888
+    command: jupyter notebook --port=8888 --ip=0.0.0.0 --allow-root
