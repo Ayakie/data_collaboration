@@ -4,29 +4,24 @@ Implementation of data collaboration : [Data Collaboration Analysis Framework Us
 
 ## Requirments
 
-Environment is created by [Pipenv](https://pipenv-ja.readthedocs.io/ja/translate-ja/basics.html)
+- Docker desktop: version 2.3.0.3
 
-From Pipfile
+Environment is created by docker using [poetry](https://python-poetry.org/docs/).
 
+All requirements written in pyproject.toml are installed into container .
+
+From pyproject.toml
 ```
-[[source]]
-name = "pypi"
-url = "https://pypi.org/simple"
-verify_ssl = true
-
-[packages]
-numpy = "==1.18"
-scikit-learn = "==0.22.2"
-keras = "==2.3.1"
-tensorflow = "==2.1.0"
-scipy = "==1.4.1"
-matplotlib = "==3.2.1"
-seaborn = "==0.10.0"
-tqdm = "*"
-pandas = "==1.0.3"
-
-[requires]
-python_version = "3.7"
+[tool.poetry.dependencies]
+python = "^3.7"
+tqdm = "^4.46.0"
+keras = "^2.2.4"
+seaborn = "^0.10.1"
+scikit-learn = "^0.23.0"
+matplotlib = "^3.2.1"
+scipy = "^1.4.1"
+tensorflow = "^2.2.0"
+numpy = "^1.18.4"
 ```
 
 ## Files
@@ -48,15 +43,19 @@ default parameters
 - `anc_type = 'random'`: Method to create anchor data
 - `dataset = 'fashion_mnist'`: Dataset ['mnist', 'fashion_mnist']
 
+Create environment
+```
+$ git clone https://github.com/Ayakie/data_collaboration
+$ docker-compose up
+```
 
 Run default condition
 ```
-(user)$ cd dc_dir
-dc_dir (user)$ python src/dc_main.py
+$ python src/dc_main.py
 ```
 
-To set non-iid<br> `options.py` for more argments
+To set non-iid and not saving figures.<br> `options.py` for more argments
 
 ```
-dc_dir (user)$ python src/dc_main.py --iid=0
+$ python src/dc_main.py --iid=0 --save_fig=0
 ```
