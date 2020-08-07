@@ -1,0 +1,11 @@
+.vscode/
+*.DS_store
+__pychache__/
+*.pyc
+*-checkpoint.ipynb
+figures/
+logs/
+data/
+notebooks/tests.ipynb
+notebooks/Sample.ipynb
+notebooks/0412_anna_DC_FL_fashion-mnist.ipynb
