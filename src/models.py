@@ -1,11 +1,11 @@
 import numpy as np
-import keras
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Reshape
-from keras.layers import Conv2D, Conv1D, MaxPooling2D, MaxPooling1D, BatchNormalization
-from keras.optimizers import SGD, Adadelta, Adam, Adamax
-from keras.models import model_from_config
-from keras.metrics import sparse_categorical_accuracy
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Flatten, Reshape
+from tensorflow.keras.layers import Conv2D, Conv1D, MaxPooling2D, MaxPooling1D, BatchNormalization
+from tensorflow.keras.optimizers import SGD, Adadelta, Adam, Adamax
+from tensorflow.keras.models import model_from_config
+from tensorflow.keras.metrics import sparse_categorical_accuracy
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.ensemble import GradientBoostingClassifier
